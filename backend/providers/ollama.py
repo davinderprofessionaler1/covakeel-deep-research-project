@@ -60,17 +60,35 @@ class ThinkingFilter:
 class OllamaProvider(AIProvider):
     def __init__(self, settings: Settings) -> None:
         self.settings = settings
-        self.corpus = ApprovedCorpus(
-            settings.knowledge_index,
-            allow_pending=settings.allow_pending_knowledge,
-        )
+        self.corpus = self._load_corpus()
+        self._corpus_signature = self._knowledge_signature()
         self.refusal_message = (
             PENDING_TEST_REFUSAL_MESSAGE
             if settings.allow_pending_knowledge
             else KNOWLEDGE_REFUSAL_MESSAGE
         )
 
+    def _load_corpus(self) -> ApprovedCorpus:
+        return ApprovedCorpus(
+            self.settings.knowledge_index,
+            allow_pending=self.settings.allow_pending_knowledge,
+        )
+
+    def _knowledge_signature(self) -> tuple[int, int] | None:
+        try:
+            details = self.settings.knowledge_index.stat()
+            return details.st_mtime_ns, details.st_size
+        except OSError:
+            return None
+
+    def _refresh_corpus(self) -> None:
+        signature = self._knowledge_signature()
+        if signature != self._corpus_signature:
+            self.corpus = self._load_corpus()
+            self._corpus_signature = signature
+
     def health(self) -> dict:
+        self._refresh_corpus()
         try:
             with urllib.request.urlopen(f"{self.settings.ollama_url}/api/tags", timeout=3) as response:
                 payload = json.load(response)
@@ -89,6 +107,7 @@ class OllamaProvider(AIProvider):
         }
 
     def stream_chat(self, messages: list[ChatMessage]) -> Iterator[str]:
+        self._refresh_corpus()
         # The CoVakeel model profile is templated to produce final-answer tokens
         # directly, so it can be streamed immediately. Keep the filter for stock
         # Qwen profiles, whose older Ollama templates may force <think> output.

@@ -201,7 +201,7 @@ export default function KnowledgeBase() {
       const response = await fetch(`/api/admin/knowledge/documents/${encodeURIComponent(document.id)}`, { method: "DELETE" });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Unable to delete the document.");
-      setMessage(`${document.title} was deleted. Restart the Legal AI service to reload the index.`);
+      setMessage(`${document.title} was deleted. CoVakeel will use the updated index on the next question.`);
       await Promise.all([load(page), loadCatalog()]);
     } catch (deleteError) {
       setError(deleteError.message);
@@ -245,7 +245,7 @@ export default function KnowledgeBase() {
         </table>
       </div>
       <div className="knowledge-pagination"><span>{formatNumber(result.pagination.total)} documents</span><div><button type="button" disabled={page <= 1 || loading} onClick={() => { const next = page - 1; setPage(next); load(next); }}>← Previous</button><span>Page {page} of {result.pagination.pages}</span><button type="button" disabled={page >= result.pagination.pages || loading} onClick={() => { const next = page + 1; setPage(next); load(next); }}>Next →</button></div></div>
-      <KnowledgeDialog open={addOpen} allowPending={result.allowPending} onClose={closeAddDialog} onSaved={(saved) => { setAddOpen(false); setMessage(`${saved.document.title} was added as ${saved.document.status}. Restart the Legal AI service to load ${saved.chunksAdded} new chunks.`); load(1); loadCatalog(); }} />
+      <KnowledgeDialog open={addOpen} allowPending={result.allowPending} onClose={closeAddDialog} onSaved={(saved) => { setAddOpen(false); setMessage(`${saved.document.title} was added as ${saved.document.status}. CoVakeel will load ${saved.chunksAdded} new chunks on the next question.`); load(1); loadCatalog(); }} />
       <DocumentDialog documentId={selectedDocument} onClose={closeDocumentDialog} />
     </section>
   );
