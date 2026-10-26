@@ -171,7 +171,7 @@ class OllamaProvider(AIProvider):
                 if sources and self.refusal_message not in visible_answer:
                     source = sources[0]
                     section = source.get("section") or "section not specified"
-                    page = source.get("page_start") or "page not specified"
+                    page = source.get("page_start") or "not specified"
                     if self.settings.allow_pending_knowledge:
                         yield "\n\nTesting data — legal review pending."
                     yield (
