@@ -1,0 +1,14 @@
+{
+  email {$TLS_EMAIL}
+}
+
+{$DOMAIN} {
+  encode zstd gzip
+  reverse_proxy landing:3001
+}
+
+{$ADMIN_DOMAIN} {
+  encode zstd gzip
+  reverse_proxy admin:3010
+}
+

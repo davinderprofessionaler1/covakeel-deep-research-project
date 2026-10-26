@@ -1,0 +1,159 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    networks: [private]
+
+  ollama:
+    image: ollama/ollama:latest
+    restart: unless-stopped
+    volumes:
+      - ollama_models:/root/.ollama
+    networks: [private]
+
+  ollama-init:
+    image: ollama/ollama:latest
+    profiles: [tools]
+    depends_on:
+      - ollama
+    environment:
+      OLLAMA_HOST: http://ollama:11434
+    volumes:
+      - ollama_models:/root/.ollama
+      - ../models:/models:ro
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - >-
+        until ollama list >/dev/null 2>&1; do sleep 2; done;
+        ollama pull qwen3:1.7b;
+        ollama create covakeel-local -f /models/CoVakeel.Modelfile
+    networks: [private]
+
+  ai:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.ai
+    restart: unless-stopped
+    depends_on:
+      - ollama
+    environment:
+      COVAKEEL_HOST: 0.0.0.0
+      COVAKEEL_PORT: 8080
+      AI_PROVIDER: ollama
+      OLLAMA_URL: http://ollama:11434
+      OLLAMA_MODEL: covakeel-local:latest
+      OLLAMA_KEEP_ALIVE: 30m
+      AI_CONTEXT_TOKENS: ${AI_CONTEXT_TOKENS:-4096}
+      AI_MAX_OUTPUT_TOKENS: ${AI_MAX_OUTPUT_TOKENS:-160}
+      AI_MAX_MESSAGES: ${AI_MAX_MESSAGES:-20}
+      AI_MAX_MESSAGE_CHARS: ${AI_MAX_MESSAGE_CHARS:-12000}
+      COVAKEEL_KNOWLEDGE_INDEX: /app/knowledge/approved/chunks.jsonl
+      COVAKEEL_ALLOW_PENDING_KNOWLEDGE: "false"
+      COVAKEEL_KNOWLEDGE_MAX_CONTEXT_CHARS: ${COVAKEEL_KNOWLEDGE_MAX_CONTEXT_CHARS:-5000}
+    volumes:
+      - ../knowledge:/app/knowledge:ro
+    networks: [private]
+
+  landing:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.landing
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      ai:
+        condition: service_started
+    environment:
+      PORT: 3001
+      CLIENT_ORIGIN: https://${DOMAIN}
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      DATABASE_SSL: "false"
+      APP_URL: https://${DOMAIN}/workspace
+      AI_SERVICE_URL: http://ai:8080
+      OTP_SECRET: ${OTP_SECRET}
+      OTP_TTL_MINUTES: ${OTP_TTL_MINUTES:-10}
+      SESSION_TTL_DAYS: ${SESSION_TTL_DAYS:-30}
+      COOKIE_SECURE: "true"
+      AUTH_DEV_MODE: "false"
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_SECURE: ${SMTP_SECURE:-false}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
+      SMTP_FROM: ${SMTP_FROM:-}
+      ADMIN_SETTINGS_SECRET: ${ADMIN_SETTINGS_SECRET}
+      ADMIN_INTERNAL_API_KEY: ${ADMIN_INTERNAL_API_KEY}
+    volumes:
+      - ../storage:/app/storage
+      - user_uploads:/app/landing-page/storage/uploads
+    networks: [private]
+
+  admin:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.admin
+    restart: unless-stopped
+    depends_on:
+      - landing
+      - ai
+    environment:
+      ADMIN_API_PORT: 3010
+      ADMIN_API_HOST: 0.0.0.0
+      ADMIN_CLIENT_ORIGIN: https://${ADMIN_DOMAIN}
+      LANDING_API_URL: http://landing:3001
+      AI_SERVICE_URL: http://ai:8080
+      ADMIN_INTERNAL_API_KEY: ${ADMIN_INTERNAL_API_KEY}
+      ADMIN_INITIAL_NAME: ${ADMIN_INITIAL_NAME:-CoVakeel administrator}
+      ADMIN_INITIAL_EMAIL: ${ADMIN_INITIAL_EMAIL}
+      ADMIN_INITIAL_PASSWORD: ${ADMIN_INITIAL_PASSWORD}
+      ADMIN_SETTINGS_SECRET: ${ADMIN_SETTINGS_SECRET}
+      ADMIN_SESSION_DAYS: ${ADMIN_SESSION_DAYS:-7}
+      COOKIE_SECURE: "true"
+      COVAKEEL_KNOWLEDGE_INDEX: knowledge/approved/chunks.jsonl
+    volumes:
+      - ../storage:/app/storage
+      - ../knowledge:/app/knowledge
+    networks: [private]
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    depends_on:
+      - landing
+      - admin
+    environment:
+      DOMAIN: ${DOMAIN}
+      ADMIN_DOMAIN: ${ADMIN_DOMAIN}
+      TLS_EMAIL: ${TLS_EMAIL}
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    networks: [private]
+
+networks:
+  private:
+
+volumes:
+  postgres_data:
+  ollama_models:
+  user_uploads:
+  caddy_data:
+  caddy_config:
+

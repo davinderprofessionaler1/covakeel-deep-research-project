@@ -1,0 +1,15 @@
+.git
+.agents
+.aws
+.codex
+.runtime
+**/.env
+**/node_modules
+**/dist
+**/__pycache__
+**/*.pyc
+storage
+landing-page/storage
+tmp
+output
+

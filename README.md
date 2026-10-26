@@ -97,3 +97,8 @@ This command cannot approve records and never changes the active runtime index.
 
 The web UI calls only CoVakeel's `/api/chat/stream` endpoint. A production provider can therefore be added behind the same endpoint without changing the web or future Flutter clients. Production still requires authentication, tenant isolation, database storage, verified Indian legal RAG, citation verification, HTTPS, queues, monitoring, and formal acceptance tests.
 
+The repository now includes a VPS deployment stack under `deploy/`. It runs
+the landing/user application, admin application, PostgreSQL, the Python legal
+RAG service, private Ollama inference and Caddy automatic HTTPS. See
+`deploy/README.md` for server sizing, DNS, secrets and deployment commands.
+
