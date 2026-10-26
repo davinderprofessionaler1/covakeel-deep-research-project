@@ -25,12 +25,16 @@ export async function managedSmtpSettings() {
     const settings = JSON.parse(await fs.readFile(settingsPath, "utf8"));
     const smtp = settings.smtp || {};
     if (!smtp.host || !smtp.username || !smtp.passwordEncrypted || !smtp.from) return null;
+    const decryptedPassword = decrypt(smtp.passwordEncrypted);
+    const password = smtp.host.toLowerCase() === "smtp.gmail.com"
+      ? decryptedPassword.replace(/\s+/g, "")
+      : decryptedPassword;
     return {
       host: smtp.host,
       port: Number(smtp.port || 587),
       secure: Boolean(smtp.secure),
       user: smtp.username,
-      pass: decrypt(smtp.passwordEncrypted),
+      pass: password,
       from: smtp.from,
     };
   } catch (error) {
