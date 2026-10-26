@@ -34,6 +34,16 @@ CREATE TABLE IF NOT EXISTS auth_otps (
 CREATE INDEX IF NOT EXISTS auth_otps_lookup_idx
   ON auth_otps (email, intent, created_at DESC);
 
+CREATE TABLE IF NOT EXISTS auth_otp_lockouts (
+  email VARCHAR(200) PRIMARY KEY,
+  failed_attempts SMALLINT NOT NULL DEFAULT 0,
+  locked_until TIMESTAMPTZ,
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS auth_otp_lockouts_expiry_idx
+  ON auth_otp_lockouts (locked_until);
+
 CREATE TABLE IF NOT EXISTS user_sessions (
   id BIGSERIAL PRIMARY KEY,
   user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,

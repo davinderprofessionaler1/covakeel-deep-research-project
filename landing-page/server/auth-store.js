@@ -1,4 +1,5 @@
 import {
+  clearOtpFailures as clearDatabaseOtpFailures,
   consumeOtp as consumeDatabaseOtp,
   createVerifiedUser,
   deleteSession as deleteDatabaseSession,
@@ -6,6 +7,7 @@ import {
   isDatabaseConfigured,
   listRegisteredUsers,
   readLatestOtp,
+  readOtpLockout,
   readSession as readDatabaseSession,
   recordFailedOtpAttempt,
   saveOtp as saveDatabaseOtp,
@@ -17,6 +19,7 @@ const memory = {
   users: new Map(),
   otps: new Map(),
   sessions: new Map(),
+  otpFailures: new Map(),
 };
 
 export function usesDevelopmentStore() {
@@ -47,12 +50,41 @@ export async function getOtp(email, intent) {
   return memory.otps.get(`${email}:${intent}`) || null;
 }
 
-export async function failOtp(id) {
-  if (!usesDevelopmentStore()) return recordFailedOtpAttempt(id);
+export async function getOtpLockout(email, windowMinutes = 5) {
+  if (!usesDevelopmentStore()) return readOtpLockout(email, windowMinutes);
+  const state = memory.otpFailures.get(email);
+  if (!state) return null;
+  const now = Date.now();
+  const windowMs = windowMinutes * 60_000;
+  if ((state.lockedUntil && state.lockedUntil.getTime() <= now)
+    || (!state.lockedUntil && now - state.updatedAt.getTime() >= windowMs)) {
+    memory.otpFailures.delete(email);
+    return null;
+  }
+  return state.lockedUntil ? { failed_attempts: state.failedAttempts, locked_until: state.lockedUntil } : null;
+}
+
+export async function failOtp(id, email, { maxAttempts = 3, lockMinutes = 5 } = {}) {
+  if (!usesDevelopmentStore()) return recordFailedOtpAttempt({ id, email, maxAttempts, lockMinutes });
   const record = memory.otps.get(id);
-  if (!record) return;
+  if (!record) return { attempts: 0, locked_until: null };
   record.attempts += 1;
-  if (record.attempts >= 5) memory.otps.delete(id);
+  const now = new Date();
+  const previous = memory.otpFailures.get(email);
+  const windowMs = lockMinutes * 60_000;
+  const stale = !previous
+    || (previous.lockedUntil && previous.lockedUntil.getTime() <= now.getTime())
+    || (!previous.lockedUntil && now.getTime() - previous.updatedAt.getTime() >= windowMs);
+  const failedAttempts = (stale ? 0 : previous.failedAttempts) + 1;
+  const lockedUntil = failedAttempts >= maxAttempts ? new Date(now.getTime() + windowMs) : null;
+  memory.otpFailures.set(email, { failedAttempts, lockedUntil, updatedAt: now });
+  if (lockedUntil) memory.otps.delete(id);
+  return { attempts: failedAttempts, locked_until: lockedUntil };
+}
+
+export async function clearOtpFailures(email) {
+  if (!usesDevelopmentStore()) return clearDatabaseOtpFailures(email);
+  memory.otpFailures.delete(email);
 }
 
 export async function consumeOtp(id) {

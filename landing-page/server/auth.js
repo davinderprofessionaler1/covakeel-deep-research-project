@@ -1,10 +1,12 @@
 import crypto from "node:crypto";
 import nodemailer from "nodemailer";
 import {
+  clearOtpFailures,
   consumeOtp,
   deleteSession,
   getOrCreateVerifiedUser,
   getOtp,
+  getOtpLockout,
   getSession,
   getUser,
   isAuthStoreReady,
@@ -16,6 +18,8 @@ import { managedSmtpSettings } from "./managed-settings.js";
 
 const SESSION_COOKIE = "covakeel_session";
 const requestTimes = new Map();
+const OTP_MAX_ATTEMPTS = 3;
+const OTP_LOCK_MINUTES = 5;
 
 function numberSetting(name, fallback) {
   const value = Number(process.env[name] || fallback);
@@ -54,6 +58,17 @@ function parseCookies(header = "") {
 
 function sessionHash(token) {
   return crypto.createHash("sha256").update(token).digest("hex");
+}
+
+function activeLockResponse(response, lockout) {
+  if (!lockout?.locked_until) return false;
+  const retryAfterSeconds = Math.max(1, Math.ceil((new Date(lockout.locked_until).getTime() - Date.now()) / 1000));
+  response.set("Retry-After", String(retryAfterSeconds));
+  response.status(429).json({
+    error: `Too many incorrect verification codes. Try again in ${Math.ceil(retryAfterSeconds / 60)} minute(s).`,
+    retryAfterSeconds,
+  });
+  return true;
 }
 
 export async function resolveSession(request) {
@@ -118,6 +133,8 @@ export function registerAuthRoutes(app) {
     const intent = request.body?.intent === "signup" ? "signup" : "login";
     if (!emailIsValid(email)) return response.status(400).json({ error: "Enter a valid email address." });
     if (!isAuthStoreReady() || !process.env.OTP_SECRET) return response.status(503).json({ error: "Authentication is not configured." });
+    const lockout = await getOtpLockout(email, OTP_LOCK_MINUTES);
+    if (activeLockResponse(response, lockout)) return;
     const smtp = await smtpConfiguration();
     if (!smtp) return response.status(503).json({ error: "Email verification is temporarily unavailable. SMTP must be configured by the administrator." });
 
@@ -153,16 +170,27 @@ export function registerAuthRoutes(app) {
     const code = String(request.body?.code || "").trim();
     if (!emailIsValid(email) || !/^\d{6}$/.test(code)) return response.status(400).json({ error: "Enter the 6-digit verification code." });
 
+    const lockout = await getOtpLockout(email, OTP_LOCK_MINUTES);
+    if (activeLockResponse(response, lockout)) return;
+
     const otp = await getOtp(email, intent);
-    if (!otp || new Date(otp.expires_at) <= new Date() || otp.attempts >= 5) {
+    if (!otp || new Date(otp.expires_at) <= new Date()) {
       return response.status(400).json({ error: "The code is invalid or has expired. Request a new code." });
     }
     if (!valueMatches(otp.code_hash, codeHash(email, code))) {
-      await failOtp(otp.id);
-      return response.status(400).json({ error: "The code is incorrect." });
+      const failure = await failOtp(otp.id, email, { maxAttempts: OTP_MAX_ATTEMPTS, lockMinutes: OTP_LOCK_MINUTES });
+      if (failure.locked_until) {
+        return activeLockResponse(response, failure);
+      }
+      const remainingAttempts = Math.max(0, OTP_MAX_ATTEMPTS - failure.attempts);
+      return response.status(400).json({
+        error: `The code is incorrect. ${remainingAttempts} attempt(s) remaining.`,
+        remainingAttempts,
+      });
     }
 
     await consumeOtp(otp.id);
+    await clearOtpFailures(email);
     const user = intent === "signup" ? await getOrCreateVerifiedUser(email) : await getUser(email);
     if (!user) return response.status(404).json({ error: "Account not found. Please sign up first." });
 

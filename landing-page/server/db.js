@@ -128,16 +128,74 @@ export async function readLatestOtp(email, intent) {
   return result.rows[0] || null;
 }
 
-export async function recordFailedOtpAttempt(id) {
+export async function readOtpLockout(email, windowMinutes = 5) {
   const database = getPool();
   if (!database) throw new Error("PostgreSQL is not configured.");
   await database.query(
-    `UPDATE auth_otps
-     SET attempts = attempts + 1,
-         consumed_at = CASE WHEN attempts + 1 >= 5 THEN NOW() ELSE consumed_at END
-     WHERE id = $1`,
-    [id],
+    `DELETE FROM auth_otp_lockouts
+     WHERE email = $1
+       AND ((locked_until IS NOT NULL AND locked_until <= NOW())
+         OR (locked_until IS NULL AND updated_at <= NOW() - ($2 * INTERVAL '1 minute')))`,
+    [email, windowMinutes],
   );
+  const result = await database.query(
+    `SELECT failed_attempts, locked_until
+     FROM auth_otp_lockouts
+     WHERE email = $1 AND locked_until > NOW()`,
+    [email],
+  );
+  return result.rows[0] || null;
+}
+
+export async function recordFailedOtpAttempt({ id, email, maxAttempts = 3, lockMinutes = 5 }) {
+  const database = getPool();
+  if (!database) throw new Error("PostgreSQL is not configured.");
+  const client = await database.connect();
+  try {
+    await client.query("BEGIN");
+    await client.query("SELECT pg_advisory_xact_lock(hashtext($1))", [email]);
+    const existing = await client.query(
+      "SELECT failed_attempts, locked_until, updated_at FROM auth_otp_lockouts WHERE email = $1 FOR UPDATE",
+      [email],
+    );
+    const now = Date.now();
+    const state = existing.rows[0];
+    const stale = !state
+      || (state.locked_until && new Date(state.locked_until).getTime() <= now)
+      || (!state.locked_until && now - new Date(state.updated_at).getTime() >= lockMinutes * 60_000);
+    const failedAttempts = (stale ? 0 : Number(state.failed_attempts)) + 1;
+    const lockedUntil = failedAttempts >= maxAttempts ? new Date(now + lockMinutes * 60_000) : null;
+
+    await client.query(
+      `INSERT INTO auth_otp_lockouts (email, failed_attempts, locked_until, updated_at)
+       VALUES ($1, $2, $3, NOW())
+       ON CONFLICT (email) DO UPDATE
+       SET failed_attempts = EXCLUDED.failed_attempts,
+           locked_until = EXCLUDED.locked_until,
+           updated_at = NOW()`,
+      [email, failedAttempts, lockedUntil],
+    );
+    await client.query(
+      `UPDATE auth_otps
+       SET attempts = attempts + 1,
+           consumed_at = CASE WHEN $2 THEN NOW() ELSE consumed_at END
+       WHERE id = $1`,
+      [id, Boolean(lockedUntil)],
+    );
+    await client.query("COMMIT");
+    return { attempts: failedAttempts, locked_until: lockedUntil };
+  } catch (error) {
+    await client.query("ROLLBACK");
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
+export async function clearOtpFailures(email) {
+  const database = getPool();
+  if (!database) throw new Error("PostgreSQL is not configured.");
+  await database.query("DELETE FROM auth_otp_lockouts WHERE email = $1", [email]);
 }
 
 export async function consumeOtp(id) {

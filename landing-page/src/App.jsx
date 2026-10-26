@@ -223,6 +223,7 @@ function AuthPage() {
   const [code, setCode] = useState("");
   const [availability, setAvailability] = useState({ loading: true, ready: false });
   const [resendSeconds, setResendSeconds] = useState(0);
+  const [lockSeconds, setLockSeconds] = useState(0);
   const [status, setStatus] = useState({ type: "idle", message: "" });
 
   useEffect(() => {
@@ -238,11 +239,18 @@ function AuthPage() {
     return () => window.clearInterval(timer);
   }, [resendSeconds]);
 
+  useEffect(() => {
+    if (lockSeconds <= 0) return undefined;
+    const timer = window.setInterval(() => setLockSeconds((value) => Math.max(0, value - 1)), 1000);
+    return () => window.clearInterval(timer);
+  }, [lockSeconds]);
+
   const chooseMode = (nextMode) => {
     setMode(nextMode);
     setStep("email");
     setCode("");
     setResendSeconds(0);
+    setLockSeconds(0);
     setStatus({ type: "idle", message: "" });
     window.history.replaceState({}, "", `/auth?mode=${nextMode}`);
   };
@@ -258,6 +266,7 @@ function AuthPage() {
         body: JSON.stringify({ email, intent: mode }),
       });
       const result = await response.json();
+      if (result.retryAfterSeconds) setLockSeconds(result.retryAfterSeconds);
       if (!response.ok) throw new Error(result.error || "Unable to send the verification code.");
       setStep("otp");
       setResendSeconds(60);
@@ -278,6 +287,7 @@ function AuthPage() {
         body: JSON.stringify({ email, intent: mode, code }),
       });
       const result = await response.json();
+      if (result.retryAfterSeconds) setLockSeconds(result.retryAfterSeconds);
       if (!response.ok) throw new Error(result.error || "Unable to verify the code.");
       setStatus({ type: "success", message: "Email verified. Opening your CoVakeel workspace…" });
       window.setTimeout(() => window.location.assign(result.redirectUrl), 500);
@@ -337,9 +347,15 @@ function AuthPage() {
                 maxLength="200"
                 required
                 autoFocus
+                onInput={() => {
+                  if (lockSeconds > 0) {
+                    setLockSeconds(0);
+                    setStatus({ type: "idle", message: "" });
+                  }
+                }}
               />
-              <button className="btn primary auth-submit" type="submit" disabled={status.type === "loading" || availability.loading || !availability.ready}>
-                {status.type === "loading" ? "Sending…" : "Continue with email →"}
+              <button className="btn primary auth-submit" type="submit" disabled={status.type === "loading" || availability.loading || !availability.ready || lockSeconds > 0}>
+                {lockSeconds > 0 ? `Locked for ${Math.ceil(lockSeconds / 60)}m` : status.type === "loading" ? "Sending…" : "Continue with email →"}
               </button>
             </form>
           ) : (
@@ -361,14 +377,20 @@ function AuthPage() {
                 autoComplete="one-time-code"
                 required
                 autoFocus
+                disabled={lockSeconds > 0}
               />
-              <button className="btn primary auth-submit" type="submit" disabled={status.type === "loading" || code.length !== 6}>
-                {status.type === "loading" ? "Verifying…" : "Verify and continue →"}
+              <button className="btn primary auth-submit" type="submit" disabled={status.type === "loading" || code.length !== 6 || lockSeconds > 0}>
+                {lockSeconds > 0 ? `Account locked for ${Math.ceil(lockSeconds / 60)}m` : status.type === "loading" ? "Verifying…" : "Verify and continue →"}
               </button>
-              <button className="text-button" type="button" disabled={status.type === "loading" || resendSeconds > 0} onClick={requestOtp}>
-                {resendSeconds > 0 ? `Resend code in ${resendSeconds}s` : "Resend verification code"}
+              <button className="text-button" type="button" disabled={status.type === "loading" || resendSeconds > 0 || lockSeconds > 0} onClick={requestOtp}>
+                {lockSeconds > 0 ? `Locked for ${Math.ceil(lockSeconds / 60)}m` : resendSeconds > 0 ? `Resend code in ${resendSeconds}s` : "Resend verification code"}
               </button>
-              <button className="text-button" type="button" onClick={() => { setStep("email"); setCode(""); setStatus({ type: "idle", message: "" }); }}>
+              <button className="text-button" type="button" onClick={() => {
+                setStep("email");
+                setCode("");
+                setLockSeconds(0);
+                setStatus({ type: "idle", message: "" });
+              }}>
                 Use a different email
               </button>
             </form>
