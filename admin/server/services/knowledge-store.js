@@ -39,13 +39,14 @@ async function readEnvironment() {
 
 export async function activeKnowledgeConfig() {
   const environment = await readEnvironment();
-  const configured = environment.COVAKEEL_KNOWLEDGE_INDEX || "knowledge/approved/chunks.jsonl";
+  const configured = process.env.COVAKEEL_KNOWLEDGE_INDEX || environment.COVAKEEL_KNOWLEDGE_INDEX || "knowledge/approved/chunks.jsonl";
   const indexPath = path.resolve(projectRoot, configured);
   if (indexPath !== projectRoot && !indexPath.startsWith(`${projectRoot}${path.sep}`)) throw new Error("Knowledge index must remain inside the CoVakeel project.");
+  const pendingSetting = process.env.COVAKEEL_ALLOW_PENDING_KNOWLEDGE || environment.COVAKEEL_ALLOW_PENDING_KNOWLEDGE || "false";
   return {
     indexPath,
     relativePath: path.relative(projectRoot, indexPath),
-    allowPending: /^(1|true|yes|on)$/i.test(environment.COVAKEEL_ALLOW_PENDING_KNOWLEDGE || "false"),
+    allowPending: /^(1|true|yes|on)$/i.test(pendingSetting),
   };
 }
 

@@ -121,7 +121,8 @@ services:
       ADMIN_SETTINGS_SECRET: ${ADMIN_SETTINGS_SECRET}
       ADMIN_SESSION_DAYS: ${ADMIN_SESSION_DAYS:-7}
       COOKIE_SECURE: "true"
-      COVAKEEL_KNOWLEDGE_INDEX: knowledge/approved/chunks.jsonl
+      COVAKEEL_KNOWLEDGE_INDEX: ${COVAKEEL_KNOWLEDGE_INDEX:-/app/knowledge/approved/chunks.jsonl}
+      COVAKEEL_ALLOW_PENDING_KNOWLEDGE: ${COVAKEEL_ALLOW_PENDING_KNOWLEDGE:-false}
     volumes:
       - ../storage:/app/storage
       - ../knowledge:/app/knowledge
