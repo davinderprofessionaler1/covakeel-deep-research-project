@@ -114,6 +114,50 @@ class ApprovedCorpusTests(unittest.TestCase):
             corpus = ApprovedCorpus(index)
             self.assertEqual(corpus.search("Explain Section 103 of BNS")[0]["id"], "record-bns")
 
+    def test_cgst_alias_excludes_same_section_from_other_acts(self):
+        with tempfile.TemporaryDirectory() as directory:
+            index = Path(directory) / "chunks.jsonl"
+            unrelated = self.record("approved", "bns")
+            unrelated["title"] = "The Bharatiya Nyaya Sanhita, 2023"
+            unrelated["section"] = "Section 2"
+            unrelated["text"] = "Definitions under an unrelated criminal law."
+            cgst = self.record("approved", "cgst-definition")
+            cgst["section"] = "Document · Part 11"
+            cgst["text"] = (
+                '(6) "aggregate turnover" means the aggregate value of all taxable '
+                "supplies, exempt supplies, exports and inter-State supplies of persons "
+                "having the same Permanent Account Number, computed on an all India basis."
+            )
+            later_cgst = self.record("approved", "cgst-registration")
+            later_cgst["section"] = "Document · Part 74"
+            later_cgst["text"] = (
+                "Section 22 requires registration when aggregate turnover exceeds "
+                "the applicable threshold. Aggregate turnover is used repeatedly here."
+            )
+            index.write_text(
+                json.dumps(unrelated) + "\n"
+                + json.dumps(later_cgst) + "\n"
+                + json.dumps(cgst) + "\n",
+                encoding="utf-8",
+            )
+            corpus = ApprovedCorpus(index)
+            results = corpus.search(
+                "What is aggregate turnover under Section 2(6) of the CGST Act, 2017?"
+            )
+            self.assertEqual(results[0]["id"], "record-cgst-definition")
+            self.assertTrue(all("Central Goods" in result["title"] for result in results))
+
+    def test_unknown_requested_alias_does_not_fall_back_to_another_act(self):
+        with tempfile.TemporaryDirectory() as directory:
+            index = Path(directory) / "chunks.jsonl"
+            unrelated = self.record("approved", "bns")
+            unrelated["title"] = "The Bharatiya Nyaya Sanhita, 2023"
+            unrelated["section"] = "Section 2"
+            unrelated["text"] = "Definitions under an unrelated criminal law."
+            index.write_text(json.dumps(unrelated) + "\n", encoding="utf-8")
+            corpus = ApprovedCorpus(index)
+            self.assertEqual(corpus.search("Explain Section 2 of the CGST Act"), [])
+
     def test_full_document_title_beats_same_section_from_another_act(self):
         with tempfile.TemporaryDirectory() as directory:
             index = Path(directory) / "chunks.jsonl"
