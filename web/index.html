@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b1a17">
+  <title>CoVakeel Local AI</title>
+  <link rel="stylesheet" href="/assets/app.css">
+</head>
+<body>
+  <div class="shell">
+    <header class="topbar">
+      <a class="brand" href="/" aria-label="CoVakeel home">
+        <span class="brand-mark" aria-hidden="true">C</span>
+        <span><strong>CoVakeel</strong><small>Local AI workspace</small></span>
+      </a>
+      <div class="connection" id="connection" title="Checking local model">
+        <span class="connection-dot"></span>
+        <span id="connection-label">Connecting…</span>
+      </div>
+    </header>
+
+    <main class="workspace">
+      <section class="hero" id="welcome">
+        <span class="eyebrow">LOCAL TESTING PROTOTYPE</span>
+        <h1>Research and draft with CoVakeel</h1>
+        <p>Ask questions against CoVakeel's local Phase 1 legal dataset.</p>
+        <div class="suggestions" aria-label="Suggested prompts">
+          <button type="button" data-prompt="What right is guaranteed under Article 14 of the Constitution of India?">Explain Article 14</button>
+          <button type="button" data-prompt="What is the punishment for murder under Section 103 of the BNS?">Check BNS section 103</button>
+          <button type="button" data-prompt="How are electronic records proved under the Bharatiya Sakshya Adhiniyam?">Electronic evidence</button>
+        </div>
+      </section>
+
+      <section class="messages" id="messages" aria-live="polite" aria-label="Conversation"></section>
+    </main>
+
+    <footer class="composer-area">
+      <form id="chat-form" class="composer">
+        <label class="sr-only" for="prompt">Your message</label>
+        <textarea id="prompt" rows="1" maxlength="12000" placeholder="Ask CoVakeel…" required></textarea>
+        <button id="send" type="submit" aria-label="Send message">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6"/></svg>
+        </button>
+      </form>
+      <div class="composer-meta">
+        <span>Enter to send · Shift + Enter for new line</span>
+        <button id="new-chat" type="button">New conversation</button>
+      </div>
+      <p class="disclaimer">Local test mode may use pending extraction data. Verify every legal answer against the cited official source and qualified professional advice.</p>
+    </footer>
+  </div>
+  <script src="/assets/app.js" defer></script>
+</body>
+</html>
+

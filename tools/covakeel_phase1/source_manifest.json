@@ -1,0 +1,65 @@
+{
+  "manifest_version": 1,
+  "documents": [
+    {
+      "slug": "constitution",
+      "title": "The Constitution of India (as on 1 May 2024)",
+      "document_type": "constitution",
+      "act_number": null,
+      "publication_date": null,
+      "effective_from": null,
+      "source_publisher": "Legislative Department, Ministry of Law and Justice, Government of India",
+      "landing_url": "https://www.legislative.gov.in/documents/constitution-of-india",
+      "pdf_url": "https://cdnbbsr.s3waas.gov.in/s380537a945c7aaa788ccfcdf1b99b5d8f/uploads/2024/07/20240716890312078.pdf",
+      "content_start_marker": "WE, THE PEOPLE OF INDIA",
+      "structure_end_marker": "FIRST SCHEDULE",
+      "structure_after_label": "Schedules and appendices",
+      "max_structure_number": 395,
+      "structure_label": "Article"
+    },
+    {
+      "slug": "bns",
+      "title": "The Bharatiya Nyaya Sanhita, 2023",
+      "document_type": "act",
+      "act_number": "45 of 2023",
+      "publication_date": "2023-12-25",
+      "effective_from": null,
+      "source_publisher": "Delhi Police, Ministry of Home Affairs, Government of India (official Gazette copy)",
+      "landing_url": "https://delhipolice.mha.gov.in/new-criminal-law.html",
+      "pdf_url": "https://delhipolice.mha.gov.in/assets/img/250883_english_01042024.pdf",
+      "content_start_marker": "BE it enacted by Parliament",
+      "max_structure_number": 358,
+      "structure_label": "Section"
+    },
+    {
+      "slug": "bnss",
+      "title": "The Bharatiya Nagarik Suraksha Sanhita, 2023",
+      "document_type": "act",
+      "act_number": "46 of 2023",
+      "publication_date": "2023-12-25",
+      "effective_from": null,
+      "source_publisher": "Delhi Police, Ministry of Home Affairs, Government of India (official Gazette copy)",
+      "landing_url": "https://delhipolice.mha.gov.in/new-criminal-law.html",
+      "pdf_url": "https://delhipolice.mha.gov.in/assets/img/250884_2_english_01042024.pdf",
+      "content_start_marker": "BE it enacted by Parliament",
+      "max_structure_number": 531,
+      "structure_end_marker": "FIRST SCHEDULE",
+      "structure_after_label": "First Schedule and forms",
+      "structure_label": "Section"
+    },
+    {
+      "slug": "bsa",
+      "title": "The Bharatiya Sakshya Adhiniyam, 2023",
+      "document_type": "act",
+      "act_number": "47 of 2023",
+      "publication_date": "2023-12-25",
+      "effective_from": null,
+      "source_publisher": "Delhi Police, Ministry of Home Affairs, Government of India (official Gazette copy)",
+      "landing_url": "https://delhipolice.mha.gov.in/new-criminal-law.html",
+      "pdf_url": "https://delhipolice.mha.gov.in/assets/img/250882_english_01042024_0.pdf",
+      "content_start_marker": "BE it enacted by Parliament",
+      "max_structure_number": 170,
+      "structure_label": "Section"
+    }
+  ]
+}

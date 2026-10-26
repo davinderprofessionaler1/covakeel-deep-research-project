@@ -1,0 +1,2 @@
+"""CoVakeel local application backend."""
+

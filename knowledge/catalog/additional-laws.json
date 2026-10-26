@@ -1,0 +1,285 @@
+{
+  "purpose": "Collection manifest only. NOT CoVakeel schema chunks; DO NOT import as chunks.jsonl.",
+  "created_on": "2026-10-23",
+  "records": [
+    {
+      "category": "civil",
+      "title": "Code of Civil Procedure, 1908",
+      "source_url": "https://www.indiacode.nic.in/bitstream/123456789/2191/1/eng.pdf",
+      "source_kind": "direct_pdf",
+      "collection_status": "not_downloaded",
+      "verification_status": "pending",
+      "notes": "Check latest amendments, effective dates and state applicability; extract and review before importing."
+    },
+    {
+      "category": "civil",
+      "title": "Indian Contract Act, 1872",
+      "source_url": "https://www.indiacode.nic.in/handle/123456789/2187?col=123456789%2F1362",
+      "source_kind": "official_page",
+      "collection_status": "not_downloaded",
+      "verification_status": "pending",
+      "notes": "Check latest amendments, effective dates and state applicability; extract and review before importing."
+    },
+    {
+      "category": "family",
+      "title": "Hindu Marriage Act, 1955",
+      "source_url": "https://www.indiacode.nic.in/bitstream/123456789/12232/1/the_hindu_marriage_act%2C_1955.pdf",
+      "source_kind": "direct_pdf",
+      "collection_status": "not_downloaded",
+      "verification_status": "pending",
+      "notes": "Check latest amendments, effective dates and state applicability; extract and review before importing."
+    },
+    {
+      "category": "consumer",
+      "title": "Consumer Protection Act, 2019",
+      "source_url": "https://www.indiacode.nic.in/indiacode/bitstream/123456789/15256/1/eng201935.pdf",
+      "source_kind": "direct_pdf",
+      "collection_status": "not_downloaded",
+      "verification_status": "pending",
+      "notes": "Check latest amendments, effective dates and state applicability; extract and review before importing."
+    },
+    {
+      "category": "cyber",
+      "title": "Information Technology Act, 2000",
+      "source_url": "https://www.indiacode.nic.in/indiacode/handle/123456789/1999?locale=en",
+      "source_kind": "official_page",
+      "collection_status": "not_downloaded",
+      "verification_status": "pending",
+      "notes": "Check latest amendments, effective dates and state applicability; extract and review before importing."
+    },
+    {
+      "category": "criminal_historical",
+      "title": "Indian Penal Code, 1860",
+      "source_url": "https://www.indiacode.nic.in/",
+      "source_kind": "discovery_portal",
+      "collection_status": "not_downloaded",
+      "verification_status": "pending",
+      "notes": "Find and verify the exact official document URL before download. Check historical/current applicability."
+    },
+    {
+      "category": "criminal_historical",
+      "title": "Code of Criminal Procedure, 1973",
+      "source_url": "https://www.indiacode.nic.in/",
+      "source_kind": "discovery_portal",
+      "collection_status": "not_downloaded",
+      "verification_status": "pending",
+      "notes": "Find and verify the exact official document URL before download. Check historical/current applicability."
+    },
+    {
+      "category": "criminal_historical",
+      "title": "Indian Evidence Act, 1872",
+      "source_url": "https://www.indiacode.nic.in/",
+      "source_kind": "discovery_portal",
+      "collection_status": "not_downloaded",
+      "verification_status": "pending",
+      "notes": "Find and verify the exact official document URL before download. Check historical/current applicability."
+    },
+    {
+      "category": "civil",
+      "title": "Specific Relief Act, 1963",
+      "source_url": "https://www.indiacode.nic.in/",
+      "source_kind": "discovery_portal",
+      "collection_status": "not_downloaded",
+      "verification_status": "pending",
+      "notes": "Find and verify the exact official document URL before download. Check historical/current applicability."
+    },
+    {
+      "category": "civil",
+      "title": "Limitation Act, 1963",
+      "source_url": "https://www.indiacode.nic.in/",
+      "source_kind": "discovery_portal",
+      "collection_status": "not_downloaded",
+      "verification_status": "pending",
+      "notes": "Find and verify the exact official document URL before download. Check historical/current applicability."
+    },
+    {
+      "category": "civil",
+      "title": "Arbitration and Conciliation Act, 1996",
+      "source_url": "https://www.indiacode.nic.in/",
+      "source_kind": "discovery_portal",
+      "collection_status": "not_downloaded",
+      "verification_status": "pending",
+      "notes": "Find and verify the exact official document URL before download. Check historical/current applicability."
+    },
+    {
+      "category": "property",
+      "title": "Transfer of Property Act, 1882",
+      "source_url": "https://www.indiacode.nic.in/",
+      "source_kind": "discovery_portal",
+      "collection_status": "not_downloaded",
+      "verification_status": "pending",
+      "notes": "Find and verify the exact official document URL before download. Check historical/current applicability."
+    },
+    {
+      "category": "property",
+      "title": "Registration Act, 1908",
+      "source_url": "https://www.indiacode.nic.in/",
+      "source_kind": "discovery_portal",
+      "collection_status": "not_downloaded",
+      "verification_status": "pending",
+      "notes": "Find and verify the exact official document URL before download. Check historical/current applicability."
+    },
+    {
+      "category": "property",
+      "title": "Indian Stamp Act, 1899",
+      "source_url": "https://www.indiacode.nic.in/",
+      "source_kind": "discovery_portal",
+      "collection_status": "not_downloaded",
+      "verification_status": "pending",
+      "notes": "Find and verify the exact official document URL before download. Check historical/current applicability."
+    },
+    {
+      "category": "family",
+      "title": "Hindu Succession Act, 1956",
+      "source_url": "https://www.indiacode.nic.in/",
+      "source_kind": "discovery_portal",
+      "collection_status": "not_downloaded",
+      "verification_status": "pending",
+      "notes": "Find and verify the exact official document URL before download. Check historical/current applicability."
+    },
+    {
+      "category": "family",
+      "title": "Hindu Adoption and Maintenance Act, 1956",
+      "source_url": "https://www.indiacode.nic.in/",
+      "source_kind": "discovery_portal",
+      "collection_status": "not_downloaded",
+      "verification_status": "pending",
+      "notes": "Find and verify the exact official document URL before download. Check historical/current applicability."
+    },
+    {
+      "category": "family",
+      "title": "Special Marriage Act, 1954",
+      "source_url": "https://www.indiacode.nic.in/",
+      "source_kind": "discovery_portal",
+      "collection_status": "not_downloaded",
+      "verification_status": "pending",
+      "notes": "Find and verify the exact official document URL before download. Check historical/current applicability."
+    },
+    {
+      "category": "family",
+      "title": "Guardians and Wards Act, 1890",
+      "source_url": "https://www.indiacode.nic.in/",
+      "source_kind": "discovery_portal",
+      "collection_status": "not_downloaded",
+      "verification_status": "pending",
+      "notes": "Find and verify the exact official document URL before download. Check historical/current applicability."
+    },
+    {
+      "category": "corporate",
+      "title": "Companies Act, 2013",
+      "source_url": "https://www.indiacode.nic.in/",
+      "source_kind": "discovery_portal",
+      "collection_status": "not_downloaded",
+      "verification_status": "pending",
+      "notes": "Find and verify the exact official document URL before download. Check historical/current applicability."
+    },
+    {
+      "category": "corporate",
+      "title": "Limited Liability Partnership Act, 2008",
+      "source_url": "https://www.indiacode.nic.in/",
+      "source_kind": "discovery_portal",
+      "collection_status": "not_downloaded",
+      "verification_status": "pending",
+      "notes": "Find and verify the exact official document URL before download. Check historical/current applicability."
+    },
+    {
+      "category": "corporate",
+      "title": "Insolvency and Bankruptcy Code, 2016",
+      "source_url": "https://www.indiacode.nic.in/",
+      "source_kind": "discovery_portal",
+      "collection_status": "not_downloaded",
+      "verification_status": "pending",
+      "notes": "Find and verify the exact official document URL before download. Check historical/current applicability."
+    },
+    {
+      "category": "labour",
+      "title": "Code on Wages, 2019",
+      "source_url": "https://www.indiacode.nic.in/",
+      "source_kind": "discovery_portal",
+      "collection_status": "not_downloaded",
+      "verification_status": "pending",
+      "notes": "Find and verify the exact official document URL before download. Check historical/current applicability."
+    },
+    {
+      "category": "labour",
+      "title": "Industrial Relations Code, 2020",
+      "source_url": "https://www.indiacode.nic.in/",
+      "source_kind": "discovery_portal",
+      "collection_status": "not_downloaded",
+      "verification_status": "pending",
+      "notes": "Find and verify the exact official document URL before download. Check historical/current applicability."
+    },
+    {
+      "category": "labour",
+      "title": "Code on Social Security, 2020",
+      "source_url": "https://www.indiacode.nic.in/",
+      "source_kind": "discovery_portal",
+      "collection_status": "not_downloaded",
+      "verification_status": "pending",
+      "notes": "Find and verify the exact official document URL before download. Check historical/current applicability."
+    },
+    {
+      "category": "labour",
+      "title": "Occupational Safety, Health and Working Conditions Code, 2020",
+      "source_url": "https://www.indiacode.nic.in/",
+      "source_kind": "discovery_portal",
+      "collection_status": "not_downloaded",
+      "verification_status": "pending",
+      "notes": "Find and verify the exact official document URL before download. Check historical/current applicability."
+    },
+    {
+      "category": "tax",
+      "title": "Income-tax Act, 1961",
+      "source_url": "https://www.indiacode.nic.in/",
+      "source_kind": "discovery_portal",
+      "collection_status": "not_downloaded",
+      "verification_status": "pending",
+      "notes": "Find and verify the exact official document URL before download. Check historical/current applicability."
+    },
+    {
+      "category": "tax",
+      "title": "Central Goods and Services Tax Act, 2017",
+      "source_url": "https://www.indiacode.nic.in/",
+      "source_kind": "discovery_portal",
+      "collection_status": "not_downloaded",
+      "verification_status": "pending",
+      "notes": "Find and verify the exact official document URL before download. Check historical/current applicability."
+    },
+    {
+      "category": "cyber",
+      "title": "Digital Personal Data Protection Act, 2023",
+      "source_url": "https://www.indiacode.nic.in/",
+      "source_kind": "discovery_portal",
+      "collection_status": "not_downloaded",
+      "verification_status": "pending",
+      "notes": "Find and verify the exact official document URL before download. Check historical/current applicability."
+    },
+    {
+      "category": "other",
+      "title": "Motor Vehicles Act, 1988",
+      "source_url": "https://www.indiacode.nic.in/",
+      "source_kind": "discovery_portal",
+      "collection_status": "not_downloaded",
+      "verification_status": "pending",
+      "notes": "Find and verify the exact official document URL before download. Check historical/current applicability."
+    },
+    {
+      "category": "other",
+      "title": "Right to Information Act, 2005",
+      "source_url": "https://www.indiacode.nic.in/",
+      "source_kind": "discovery_portal",
+      "collection_status": "not_downloaded",
+      "verification_status": "pending",
+      "notes": "Find and verify the exact official document URL before download. Check historical/current applicability."
+    },
+    {
+      "category": "other",
+      "title": "Protection of Women from Domestic Violence Act, 2005",
+      "source_url": "https://www.indiacode.nic.in/",
+      "source_kind": "discovery_portal",
+      "collection_status": "not_downloaded",
+      "verification_status": "pending",
+      "notes": "Find and verify the exact official document URL before download. Check historical/current applicability."
+    }
+  ]
+}

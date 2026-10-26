@@ -1,0 +1,66 @@
+[
+  {
+    "id": "income-tax-act-2025",
+    "title": "Income-tax Act, 2025",
+    "authority": "Income Tax Department, Ministry of Finance",
+    "kind": "primary_legislation",
+    "url": "https://incometaxindia.gov.in/Documents/Act/Income-tax-Act-2025.pdf",
+    "filename": "income-tax-act-2025.pdf"
+  },
+  {
+    "id": "income-tax-rules-2026",
+    "title": "Income-tax Rules, 2026",
+    "authority": "Income Tax Department, Ministry of Finance",
+    "kind": "rules",
+    "url": "https://www.incometax.gov.in/iec/foportal/sites/default/files/2026-03/En-Notified-IT-Rules-2026-20-03-2026.pdf",
+    "filename": "income-tax-rules-2026.pdf"
+  },
+  {
+    "id": "cgst-act-2017",
+    "title": "Central Goods and Services Tax Act, 2017",
+    "authority": "India Code, Ministry of Law and Justice",
+    "kind": "primary_legislation",
+    "url": "https://www.indiacode.nic.in/indiacode/bitstream/123456789/15689/1/A2017-12.pdf",
+    "filename": "cgst-act-2017.pdf"
+  },
+  {
+    "id": "igst-act-2017",
+    "title": "Integrated Goods and Services Tax Act, 2017",
+    "authority": "India Code, Ministry of Law and Justice",
+    "kind": "primary_legislation",
+    "url": "https://www.indiacode.nic.in/bitstream/123456789/2251/1/A201713.pdf",
+    "filename": "igst-act-2017.pdf"
+  },
+  {
+    "id": "utgst-act-2017",
+    "title": "Union Territory Goods and Services Tax Act, 2017",
+    "authority": "India Code, Ministry of Law and Justice",
+    "kind": "primary_legislation",
+    "url": "https://www.indiacode.nic.in/bitstream/123456789/2252/1/A2017_14.pdf",
+    "filename": "utgst-act-2017.pdf"
+  },
+  {
+    "id": "gst-compensation-act-2017",
+    "title": "Goods and Services Tax (Compensation to States) Act, 2017",
+    "authority": "India Code, Ministry of Law and Justice",
+    "kind": "primary_legislation",
+    "url": "https://www.indiacode.nic.in/bitstream/123456789/2253/1/a2017-15.pdf",
+    "filename": "gst-compensation-act-2017.pdf"
+  },
+  {
+    "id": "customs-act-1962",
+    "title": "Customs Act, 1962",
+    "authority": "India Code, Ministry of Law and Justice",
+    "kind": "primary_legislation",
+    "url": "https://www.indiacode.nic.in/indiacode/bitstream/123456789/2475/1/aA1962-52.pdf",
+    "filename": "customs-act-1962.pdf"
+  },
+  {
+    "id": "customs-tariff-act-1975",
+    "title": "Customs Tariff Act, 1975",
+    "authority": "India Code, Ministry of Law and Justice",
+    "kind": "primary_legislation",
+    "url": "https://www.indiacode.nic.in/bitstream/123456789/8774/1/a197551.pdf",
+    "filename": "customs-tariff-act-1975.pdf"
+  }
+]

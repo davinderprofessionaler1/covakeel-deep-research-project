@@ -1,0 +1,92 @@
+[
+  {
+    "id": "income-tax-act-2025",
+    "title": "Income-tax Act, 2025",
+    "authority": "Income Tax Department, Ministry of Finance",
+    "kind": "primary_legislation",
+    "url": "https://incometaxindia.gov.in/Documents/Act/Income-tax-Act-2025.pdf",
+    "filename": "income-tax-act-2025.pdf",
+    "status": "external_only",
+    "download_error": "HTTPError: HTTP Error 403: Forbidden"
+  },
+  {
+    "id": "income-tax-rules-2026",
+    "title": "Income-tax Rules, 2026",
+    "authority": "Income Tax Department, Ministry of Finance",
+    "kind": "rules",
+    "url": "https://www.incometax.gov.in/iec/foportal/sites/default/files/2026-03/En-Notified-IT-Rules-2026-20-03-2026.pdf",
+    "filename": "income-tax-rules-2026.pdf",
+    "sha256": "30bc85bf9d3ff23f378d5ddd2ca1d2e3d223134471fc8163aa5e2feecacb7e51",
+    "bytes": 10019228,
+    "downloaded_at": "2026-10-23T07:55:40.020443+00:00",
+    "status": "downloaded"
+  },
+  {
+    "id": "cgst-act-2017",
+    "title": "Central Goods and Services Tax Act, 2017",
+    "authority": "India Code, Ministry of Law and Justice",
+    "kind": "primary_legislation",
+    "url": "https://www.indiacode.nic.in/indiacode/bitstream/123456789/15689/1/A2017-12.pdf",
+    "filename": "cgst-act-2017.pdf",
+    "sha256": "c4dbd51f0355360e63d8a25560547f9e7e00b3af349d8666265ab60b4610cf24",
+    "bytes": 1270266,
+    "downloaded_at": "2026-10-23T07:55:40.020443+00:00",
+    "status": "downloaded"
+  },
+  {
+    "id": "igst-act-2017",
+    "title": "Integrated Goods and Services Tax Act, 2017",
+    "authority": "India Code, Ministry of Law and Justice",
+    "kind": "primary_legislation",
+    "url": "https://www.indiacode.nic.in/bitstream/123456789/2251/1/A201713.pdf",
+    "filename": "igst-act-2017.pdf",
+    "sha256": "484d62b82b2108d4fd79461d1d1e0067ba110562f9e5773d9cacba0e379ac92c",
+    "bytes": 286565,
+    "downloaded_at": "2026-10-23T07:55:40.020443+00:00",
+    "status": "downloaded"
+  },
+  {
+    "id": "utgst-act-2017",
+    "title": "Union Territory Goods and Services Tax Act, 2017",
+    "authority": "India Code, Ministry of Law and Justice",
+    "kind": "primary_legislation",
+    "url": "https://www.indiacode.nic.in/bitstream/123456789/2252/1/A2017_14.pdf",
+    "filename": "utgst-act-2017.pdf",
+    "status": "external_only",
+    "download_error": "HTTPError: HTTP Error 504: Gateway Time-out"
+  },
+  {
+    "id": "gst-compensation-act-2017",
+    "title": "Goods and Services Tax (Compensation to States) Act, 2017",
+    "authority": "India Code, Ministry of Law and Justice",
+    "kind": "primary_legislation",
+    "url": "https://www.indiacode.nic.in/bitstream/123456789/2253/1/a2017-15.pdf",
+    "filename": "gst-compensation-act-2017.pdf",
+    "status": "external_only",
+    "download_error": "HTTPError: HTTP Error 504: Gateway Time-out"
+  },
+  {
+    "id": "customs-act-1962",
+    "title": "Customs Act, 1962",
+    "authority": "India Code, Ministry of Law and Justice",
+    "kind": "primary_legislation",
+    "url": "https://www.indiacode.nic.in/indiacode/bitstream/123456789/2475/1/aA1962-52.pdf",
+    "filename": "customs-act-1962.pdf",
+    "sha256": "55cdfe2e6648e832c77857d83dc1be27721aabb2e645c4c2ce4c02eeace80d2e",
+    "bytes": 1424563,
+    "downloaded_at": "2026-10-23T07:55:40.020443+00:00",
+    "status": "downloaded"
+  },
+  {
+    "id": "customs-tariff-act-1975",
+    "title": "Customs Tariff Act, 1975",
+    "authority": "India Code, Ministry of Law and Justice",
+    "kind": "primary_legislation",
+    "url": "https://www.indiacode.nic.in/bitstream/123456789/8774/1/a197551.pdf",
+    "filename": "customs-tariff-act-1975.pdf",
+    "sha256": "27c0ab1de07b956552328f559a3e074a53309d278df545f42c6e52872168d7e1",
+    "bytes": 12906265,
+    "downloaded_at": "2026-10-23T07:55:40.020443+00:00",
+    "status": "downloaded"
+  }
+]

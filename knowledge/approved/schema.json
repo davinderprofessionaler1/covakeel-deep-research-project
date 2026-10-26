@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Indian legal RAG chunk",
+  "type": "object",
+  "required": ["id", "document_id", "document_type", "title", "jurisdiction", "language", "source_url", "source_publisher", "retrieved_at", "sha256", "text", "verification_status"],
+  "properties": {
+    "id": {"type": "string"},
+    "document_id": {"type": "string"},
+    "document_type": {"enum": ["constitution", "act", "rule", "regulation", "notification", "judgment", "order", "amendment", "ordinance", "other"]},
+    "title": {"type": "string"},
+    "act_number": {"type": ["string", "null"]},
+    "section": {"type": ["string", "null"]},
+    "court": {"type": ["string", "null"]},
+    "case_number": {"type": ["string", "null"]},
+    "neutral_citation": {"type": ["string", "null"]},
+    "jurisdiction": {"type": "string"},
+    "language": {"type": "string"},
+    "publication_date": {"type": ["string", "null"], "format": "date"},
+    "effective_from": {"type": ["string", "null"], "format": "date"},
+    "effective_to": {"type": ["string", "null"], "format": "date"},
+    "source_url": {"type": "string", "format": "uri"},
+    "source_publisher": {"type": "string"},
+    "retrieved_at": {"type": "string", "format": "date-time"},
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "page_start": {"type": ["integer", "null"]},
+    "page_end": {"type": ["integer", "null"]},
+    "text": {"type": "string", "minLength": 1},
+    "verification_status": {"enum": ["pending", "approved", "rejected"]},
+    "supersedes": {"type": "array", "items": {"type": "string"}},
+    "notes": {"type": ["string", "null"]}
+  },
+  "additionalProperties": false
+}

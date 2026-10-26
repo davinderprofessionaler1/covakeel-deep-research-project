@@ -1,0 +1,24 @@
+FROM qwen3:1.7b
+
+# The stock Qwen3 Ollama template forces a <think> prefix. For this CPU-based
+# interactive prototype we explicitly request non-thinking answers so users
+# receive the visible response quickly.
+TEMPLATE """{{- if .System }}<|im_start|>system
+{{ .System }}<|im_end|>
+{{ end -}}
+{{- range .Messages }}
+{{- if eq .Role "user" }}<|im_start|>user
+{{ .Content }} /no_think<|im_end|>
+{{- else if eq .Role "assistant" }}<|im_start|>assistant
+{{ .Content }}<|im_end|>
+{{- end }}
+{{- end }}<|im_start|>assistant
+"""
+
+PARAMETER stop <|im_start|>
+PARAMETER stop <|im_end|>
+PARAMETER repeat_penalty 1.05
+PARAMETER temperature 0.2
+PARAMETER top_k 20
+PARAMETER top_p 0.8
+
