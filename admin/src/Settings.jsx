@@ -26,6 +26,7 @@ export default function Settings({ admin, onAdminUpdated, onPasswordChanged, onB
   const [passwordStatus, setPasswordStatus] = useState({ type: "", message: "" });
   const [smtp, setSmtp] = useState(emptySettings.smtp);
   const [smtpStatus, setSmtpStatus] = useState({ type: "", message: "" });
+  const smtpReady = Boolean(smtp.host && smtp.username && smtp.passwordConfigured && smtp.from);
 
   useEffect(() => {
     request("/api/admin/settings").then((result) => {
@@ -130,6 +131,7 @@ export default function Settings({ admin, onAdminUpdated, onPasswordChanged, onB
 
         <article className="settings-card smtp-card">
           <div className="settings-card-head"><span className="settings-icon">✉</span><div><h2>SMTP email delivery</h2><p>Used for user OTP and transactional email configuration.</p></div></div>
+          <div className={`smtp-readiness ${smtpReady ? "ready" : "pending"}`}><i />{smtpReady ? "Email OTP delivery configured" : "Complete all SMTP fields to enable real email OTP delivery"}</div>
           <form className="settings-form" onSubmit={saveSmtp}>
             <div className="settings-fields three"><label>SMTP host<input value={smtp.host} onChange={(event) => setSmtp({ ...smtp, host: event.target.value })} placeholder="smtp.example.com" /></label><label>Port<input type="number" min="1" max="65535" value={smtp.port} onChange={(event) => setSmtp({ ...smtp, port: Number(event.target.value) })} /></label><label className="toggle-label"><input type="checkbox" checked={smtp.secure} onChange={(event) => setSmtp({ ...smtp, secure: event.target.checked })} />Use secure TLS</label></div>
             <div className="settings-fields two"><label>Username<input value={smtp.username} onChange={(event) => setSmtp({ ...smtp, username: event.target.value })} autoComplete="off" /></label><label>Password<input type="password" value={smtp.password || ""} onChange={(event) => setSmtp({ ...smtp, password: event.target.value })} placeholder={smtp.passwordConfigured ? "Saved — leave blank to keep" : "SMTP password"} autoComplete="new-password" /></label></div>

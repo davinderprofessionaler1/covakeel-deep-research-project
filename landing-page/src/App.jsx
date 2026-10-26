@@ -221,14 +221,28 @@ function AuthPage() {
   const [step, setStep] = useState("email");
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
-  const [devOtp, setDevOtp] = useState("");
+  const [availability, setAvailability] = useState({ loading: true, ready: false });
+  const [resendSeconds, setResendSeconds] = useState(0);
   const [status, setStatus] = useState({ type: "idle", message: "" });
+
+  useEffect(() => {
+    fetch("/api/auth/status")
+      .then((response) => response.json())
+      .then((result) => setAvailability({ loading: false, ready: Boolean(result.ready) }))
+      .catch(() => setAvailability({ loading: false, ready: false }));
+  }, []);
+
+  useEffect(() => {
+    if (resendSeconds <= 0) return undefined;
+    const timer = window.setInterval(() => setResendSeconds((value) => Math.max(0, value - 1)), 1000);
+    return () => window.clearInterval(timer);
+  }, [resendSeconds]);
 
   const chooseMode = (nextMode) => {
     setMode(nextMode);
     setStep("email");
     setCode("");
-    setDevOtp("");
+    setResendSeconds(0);
     setStatus({ type: "idle", message: "" });
     window.history.replaceState({}, "", `/auth?mode=${nextMode}`);
   };
@@ -245,8 +259,8 @@ function AuthPage() {
       });
       const result = await response.json();
       if (!response.ok) throw new Error(result.error || "Unable to send the verification code.");
-      setDevOtp(result.devOtp || "");
       setStep("otp");
+      setResendSeconds(60);
       setStatus({ type: "success", message: result.message });
     } catch (error) {
       setStatus({ type: "error", message: error.message });
@@ -299,6 +313,13 @@ function AuthPage() {
             <button type="button" role="tab" aria-selected={mode === "signup"} className={mode === "signup" ? "active" : ""} onClick={() => chooseMode("signup")}>Create Account</button>
           </div>
 
+          {!availability.loading && (
+            <div className={`auth-service-state ${availability.ready ? "ready" : "unavailable"}`} role="status">
+              <span>{availability.ready ? "●" : "!"}</span>
+              {availability.ready ? "Secure email OTP delivery is active." : "Email verification is temporarily unavailable. Please try again later."}
+            </div>
+          )}
+
           {step === "email" ? (
             <form className="auth-form" onSubmit={requestOtp}>
               <span className="label">{mode === "login" ? "Welcome back" : "Create your account"}</span>
@@ -317,7 +338,7 @@ function AuthPage() {
                 required
                 autoFocus
               />
-              <button className="btn primary auth-submit" type="submit" disabled={status.type === "loading"}>
+              <button className="btn primary auth-submit" type="submit" disabled={status.type === "loading" || availability.loading || !availability.ready}>
                 {status.type === "loading" ? "Sending…" : "Continue with email →"}
               </button>
             </form>
@@ -326,13 +347,6 @@ function AuthPage() {
               <span className="label">Verify your email</span>
               <h2>Enter the 6-digit code</h2>
               <p>We sent a verification code to <strong>{maskedEmail}</strong>.</p>
-              {devOtp && (
-                <div className="dev-otp" role="note">
-                  <span>Local testing code</span>
-                  <strong>{devOtp}</strong>
-                  <small>SMTP is not connected locally. This code will be emailed in production.</small>
-                </div>
-              )}
               <label htmlFor="auth-code">Verification code</label>
               <input
                 className="otp-input"
@@ -350,6 +364,9 @@ function AuthPage() {
               />
               <button className="btn primary auth-submit" type="submit" disabled={status.type === "loading" || code.length !== 6}>
                 {status.type === "loading" ? "Verifying…" : "Verify and continue →"}
+              </button>
+              <button className="text-button" type="button" disabled={status.type === "loading" || resendSeconds > 0} onClick={requestOtp}>
+                {resendSeconds > 0 ? `Resend code in ${resendSeconds}s` : "Resend verification code"}
               </button>
               <button className="text-button" type="button" onClick={() => { setStep("email"); setCode(""); setStatus({ type: "idle", message: "" }); }}>
                 Use a different email

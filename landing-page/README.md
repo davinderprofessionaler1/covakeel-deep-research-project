@@ -26,7 +26,7 @@ pnpm dev
 
 The page works without PostgreSQL, but the contact form will report that storage is not configured.
 
-For local authentication testing, `.env` enables an in-memory development store and shows the OTP on the verification screen. Live environments must disable `AUTH_DEV_MODE`, configure PostgreSQL, set a strong `OTP_SECRET`, and provide SMTP settings. After verification the server redirects to `APP_URL`.
+For local authentication testing, `.env` can enable the in-memory development store, but OTP codes are never returned to the browser. Both signup and login require a configured SMTP provider and deliver the code only by email. Live environments must disable `AUTH_DEV_MODE`, configure PostgreSQL, set a strong `OTP_SECRET`, and provide SMTP settings. After verification the server redirects to `APP_URL`.
 
 SMTP can be saved from the admin Settings screen. The admin API encrypts its password and the landing API uses it for OTP delivery. Keep `ADMIN_SETTINGS_SECRET` identical in both applications. Environment-based `SMTP_*` values remain available as a fallback.
 

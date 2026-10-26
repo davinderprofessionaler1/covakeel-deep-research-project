@@ -221,11 +221,11 @@ h3 { font-size: 23px; }
 .auth-form input:focus { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(180, 139, 80, .13); }
 .auth-submit { width: 100%; margin-top: 16px; }
 .otp-input { text-align: center; font-size: 23px !important; font-weight: 700; letter-spacing: .45em; }
-.dev-otp { display: grid; gap: 4px; margin: -7px 0 22px; padding: 15px; border: 1px solid #ddc5a7; border-radius: 10px; background: #fff8ed; text-align: center; }
-.dev-otp span { color: #765a38; font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
-.dev-otp strong { color: #8d6333; font-size: 27px; letter-spacing: .2em; }
-.dev-otp small { color: #75685c; font-size: 10px; }
 .text-button { margin: 14px auto 0; border: 0; background: transparent; color: #8d6333; font-size: 12px; font-weight: 700; cursor: pointer; }
+.text-button:disabled { cursor: not-allowed; opacity: .5; }
+.auth-service-state { display: flex; align-items: center; gap: 8px; margin: -24px 0 28px; padding: 10px 12px; border: 1px solid #c8ddce; border-radius: 9px; background: #eff8f1; color: #3d694b; font-size: 11px; font-weight: 700; }
+.auth-service-state > span { font-size: 10px; }
+.auth-service-state.unavailable { border-color: #e7c6bd; background: #fff2ef; color: #91493d; }
 .auth-status { margin-top: 18px; }
 .auth-terms { margin-top: 24px; text-align: center; font-size: 11px; }
 

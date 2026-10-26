@@ -10,7 +10,6 @@ import {
   isAuthStoreReady,
   saveOtp,
   saveSession,
-  usesDevelopmentStore,
   failOtp,
 } from "./auth-store.js";
 import { managedSmtpSettings } from "./managed-settings.js";
@@ -86,12 +85,8 @@ async function smtpConfiguration() {
   };
 }
 
-async function sendOtpEmail(email, code) {
-  const smtp = await smtpConfiguration();
-  if (!smtp) {
-    if (usesDevelopmentStore()) return { delivered: false, development: true };
-    throw new Error("SMTP is not configured.");
-  }
+async function sendOtpEmail(email, code, smtp) {
+  if (!smtp) throw new Error("SMTP is not configured.");
   const transporter = nodemailer.createTransport({
     host: smtp.host,
     port: smtp.port,
@@ -105,15 +100,16 @@ async function sendOtpEmail(email, code) {
     text: `Your CoVakeel verification code is ${code}. It expires in ${numberSetting("OTP_TTL_MINUTES", 10)} minutes.`,
     html: `<div style="font-family:Arial,sans-serif;max-width:520px;margin:auto;padding:28px;color:#29231f"><h1 style="font-family:Georgia,serif">CoVakeel</h1><p>Use this verification code to continue:</p><p style="font-size:32px;letter-spacing:8px;font-weight:700;color:#9d713c">${code}</p><p>This code expires in ${numberSetting("OTP_TTL_MINUTES", 10)} minutes. If you did not request it, you can ignore this email.</p></div>`,
   });
-  return { delivered: true, development: false };
 }
 
 export function registerAuthRoutes(app) {
   app.get("/api/auth/status", async (_request, response) => {
+    const emailDelivery = Boolean(await smtpConfiguration());
+    const storageReady = isAuthStoreReady();
     response.json({
-      ready: isAuthStoreReady() && Boolean(process.env.OTP_SECRET),
-      emailDelivery: Boolean(await smtpConfiguration()),
-      developmentMode: usesDevelopmentStore(),
+      ready: storageReady && Boolean(process.env.OTP_SECRET) && emailDelivery,
+      emailDelivery,
+      storageReady,
     });
   });
 
@@ -122,6 +118,8 @@ export function registerAuthRoutes(app) {
     const intent = request.body?.intent === "signup" ? "signup" : "login";
     if (!emailIsValid(email)) return response.status(400).json({ error: "Enter a valid email address." });
     if (!isAuthStoreReady() || !process.env.OTP_SECRET) return response.status(503).json({ error: "Authentication is not configured." });
+    const smtp = await smtpConfiguration();
+    if (!smtp) return response.status(503).json({ error: "Email verification is temporarily unavailable. SMTP must be configured by the administrator." });
 
     const rateKey = `${request.ip}:${email}`;
     const lastRequest = requestTimes.get(rateKey) || 0;
@@ -136,13 +134,12 @@ export function registerAuthRoutes(app) {
     const code = String(crypto.randomInt(0, 1_000_000)).padStart(6, "0");
     const ttlMinutes = numberSetting("OTP_TTL_MINUTES", 10);
     try {
-      const delivery = await sendOtpEmail(email, code);
+      await sendOtpEmail(email, code, smtp);
       await saveOtp({ email, intent, codeHash: codeHash(email, code), expiresAt: new Date(Date.now() + ttlMinutes * 60_000) });
       requestTimes.set(rateKey, Date.now());
       return response.json({
-        message: delivery.delivered ? "Verification code sent to your email." : "Development verification code generated.",
+        message: "Verification code sent to your email.",
         expiresInSeconds: ttlMinutes * 60,
-        ...(delivery.development ? { devOtp: code } : {}),
       });
     } catch (error) {
       console.error("OTP delivery failed:", error.message);
