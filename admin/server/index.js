@@ -6,6 +6,9 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { dashboardRouter } from "./routes/dashboard.js";
 import { knowledgeRouter } from "./routes/knowledge.js";
+import { authRouter } from "./routes/auth.js";
+import { settingsRouter } from "./routes/settings.js";
+import { requireAdmin } from "./services/admin-auth.js";
 
 const app = express();
 const port = Number(process.env.ADMIN_API_PORT || 3010);
@@ -14,14 +17,16 @@ const adminRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..
 
 app.disable("x-powered-by");
 app.use(helmet({ contentSecurityPolicy: production ? undefined : false }));
-app.use(cors({ origin: process.env.ADMIN_CLIENT_ORIGIN || "http://127.0.0.1:5174" }));
-app.use(express.json({ limit: "32kb" }));
+app.use(cors({ origin: process.env.ADMIN_CLIENT_ORIGIN || "http://127.0.0.1:5174", credentials: true }));
+app.use(express.json({ limit: "64kb" }));
 
 app.get("/api/admin/health", (_request, response) => {
   response.json({ status: "ok", service: "covakeel-admin-api", environment: production ? "production" : "development" });
 });
-app.use("/api/admin", dashboardRouter);
-app.use("/api/admin", knowledgeRouter);
+app.use("/api/admin", authRouter);
+app.use("/api/admin", settingsRouter);
+app.use("/api/admin", requireAdmin, dashboardRouter);
+app.use("/api/admin", requireAdmin, knowledgeRouter);
 
 if (production) {
   app.use(express.static(path.join(adminRoot, "dist"), { maxAge: "1d", index: false }));

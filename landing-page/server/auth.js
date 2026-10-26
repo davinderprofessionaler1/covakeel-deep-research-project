@@ -13,6 +13,7 @@ import {
   usesDevelopmentStore,
   failOtp,
 } from "./auth-store.js";
+import { managedSmtpSettings } from "./managed-settings.js";
 
 const SESSION_COOKIE = "covakeel_session";
 const requestTimes = new Map();
@@ -71,23 +72,34 @@ function cookieOptions(maxAge) {
   };
 }
 
-function smtpConfigured() {
-  return Boolean(process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS && process.env.SMTP_FROM);
+async function smtpConfiguration() {
+  const managed = await managedSmtpSettings();
+  if (managed) return managed;
+  if (!(process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS && process.env.SMTP_FROM)) return null;
+  return {
+    host: process.env.SMTP_HOST,
+    port: numberSetting("SMTP_PORT", 587),
+    secure: process.env.SMTP_SECURE === "true",
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS,
+    from: process.env.SMTP_FROM,
+  };
 }
 
 async function sendOtpEmail(email, code) {
-  if (!smtpConfigured()) {
+  const smtp = await smtpConfiguration();
+  if (!smtp) {
     if (usesDevelopmentStore()) return { delivered: false, development: true };
     throw new Error("SMTP is not configured.");
   }
   const transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
-    port: numberSetting("SMTP_PORT", 587),
-    secure: process.env.SMTP_SECURE === "true",
-    auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
+    host: smtp.host,
+    port: smtp.port,
+    secure: smtp.secure,
+    auth: { user: smtp.user, pass: smtp.pass },
   });
   await transporter.sendMail({
-    from: process.env.SMTP_FROM,
+    from: smtp.from,
     to: email,
     subject: "Your CoVakeel verification code",
     text: `Your CoVakeel verification code is ${code}. It expires in ${numberSetting("OTP_TTL_MINUTES", 10)} minutes.`,
@@ -97,10 +109,10 @@ async function sendOtpEmail(email, code) {
 }
 
 export function registerAuthRoutes(app) {
-  app.get("/api/auth/status", (_request, response) => {
+  app.get("/api/auth/status", async (_request, response) => {
     response.json({
       ready: isAuthStoreReady() && Boolean(process.env.OTP_SECRET),
-      emailDelivery: smtpConfigured(),
+      emailDelivery: Boolean(await smtpConfiguration()),
       developmentMode: usesDevelopmentStore(),
     });
   });

@@ -11,6 +11,7 @@ React landing page based on the supplied `covakeel_landing.html`, with an Expres
 - Authenticated workspace with searchable conversation history
 - Streaming proxy to the local CoVakeel legal AI service
 - Per-conversation PDF, Word, text and image attachments
+- Shared logo and brand name managed from the admin Settings module
 
 ## Local development
 
@@ -26,6 +27,8 @@ pnpm dev
 The page works without PostgreSQL, but the contact form will report that storage is not configured.
 
 For local authentication testing, `.env` enables an in-memory development store and shows the OTP on the verification screen. Live environments must disable `AUTH_DEV_MODE`, configure PostgreSQL, set a strong `OTP_SECRET`, and provide SMTP settings. After verification the server redirects to `APP_URL`.
+
+SMTP can be saved from the admin Settings screen. The admin API encrypts its password and the landing API uses it for OTP delivery. Keep `ADMIN_SETTINGS_SECRET` identical in both applications. Environment-based `SMTP_*` values remain available as a fallback.
 
 The authenticated workspace is available at `/workspace`. In local mode its conversations last for the lifetime of the Node process. With PostgreSQL configured, users, sessions, conversations and messages persist across restarts.
 

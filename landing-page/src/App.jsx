@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import Workspace from "./Workspace.jsx";
+import { BrandMark } from "./Branding.jsx";
 
 const features = [
   {
@@ -52,7 +53,7 @@ function Header({ onContact }) {
     <header className="navbox">
       <div className="wrap nav">
         <a className="brand" href="#home" onClick={closeMenu} aria-label="CoVakeel home">
-          <span aria-hidden="true">⚖</span> CoVakeel
+          <BrandMark />
         </a>
         <nav className={`links ${open ? "open" : ""}`} aria-label="Main navigation">
           <a href="#home" onClick={closeMenu}>Home</a>
@@ -98,7 +99,7 @@ function ResearchDemo() {
   return (
     <div className="demo" id="research">
       <div className="demohead">
-        <strong><span aria-hidden="true">⚖</span> CoVakeel</strong>
+        <strong><BrandMark compact /></strong>
         <small>🇮🇳 India</small>
       </div>
       <div className="modes" aria-label="Research mode">
@@ -276,7 +277,7 @@ function AuthPage() {
   return (
     <main className="auth-shell">
       <section className="auth-brand-panel">
-        <a className="brand auth-brand" href="/"><span aria-hidden="true">⚖</span> CoVakeel</a>
+        <a className="brand auth-brand" href="/"><BrandMark /></a>
         <div>
           <span className="label">Secure workspace access</span>
           <h1>Legal research,<br /><span className="gold">ready when you are.</span></h1>
@@ -438,7 +439,7 @@ export default function App() {
             </div>
             <div className="visual" aria-label="CoVakeel workspace preview">
               <div className="laptop">
-                <div className="brand"><span aria-hidden="true">⚖</span> CoVakeel</div>
+                <div className="brand"><BrandMark /></div>
                 <h3>What would you like to research?</h3>
                 <div className="fake">Ask a question about Indian law, policy or compliance... <span>→</span></div>
                 <p className="preview-modes">Quick Research · Deep Research · Drafting</p>
@@ -495,7 +496,7 @@ export default function App() {
         <div className="wrap">
           <div className="footgrid">
             <div>
-              <div className="brand"><span aria-hidden="true">⚖</span> CoVakeel</div>
+              <div className="brand"><BrandMark /></div>
               <p>AI Research · Deep Research · Source-backed Answers · AI Drafting</p>
               <p>India-focused research and drafting platform.</p>
             </div>

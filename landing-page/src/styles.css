@@ -45,6 +45,11 @@ h3 { font-size: 23px; }
 .nav { display: flex; height: 80px; align-items: center; justify-content: space-between; gap: 20px; }
 .brand { color: var(--ink); font: 700 28px "Playfair Display", Georgia, serif; white-space: nowrap; }
 .brand span { color: var(--gold); }
+.shared-brand { display: inline-flex; align-items: center; gap: 8px; color: inherit; font: inherit; line-height: 1; }
+.shared-brand > img { width: 34px; height: 34px; object-fit: contain; border-radius: 7px; background: #fff; }
+.shared-brand > .shared-brand-fallback { display: inline-grid; width: auto; height: auto; place-items: center; color: var(--gold); }
+.shared-brand > span:last-child { color: inherit; }
+.shared-brand.compact > img { width: 27px; height: 27px; }
 .links, .right { display: flex; align-items: center; gap: 25px; font-size: 13px; font-weight: 700; }
 .links a, .nav-link { position: relative; }
 .links a::after, .nav-link::after { position: absolute; right: 0; bottom: -7px; left: 0; height: 2px; background: var(--gold); content: ""; transform: scaleX(0); transition: transform .2s ease; }
@@ -246,7 +251,9 @@ h3 { font-size: 23px; }
 .workspace-sidebar { position: fixed; z-index: 35; top: 0; bottom: 0; left: 0; display: flex; width: var(--sidebar-width); flex-direction: column; padding: 22px 16px 14px; border-right: 1px solid #eadfD2; background: #f8f3ec; }
 .workspace-brand-row { display: flex; align-items: center; justify-content: space-between; padding: 0 7px 20px; }
 .workspace-brand { font: 700 26px "Playfair Display", Georgia, serif; }
-.workspace-brand span { color: var(--gold); }
+.workspace-brand > .shared-brand { color: #342c25; }
+.workspace-brand .shared-brand-fallback { color: var(--gold); }
+.workspace-brand .shared-brand > img { width: 32px; height: 32px; }
 .sidebar-close { display: none; border: 0; background: transparent; font-size: 25px; cursor: pointer; }
 .workspace-nav { display: grid; gap: 3px; }
 .workspace-nav > button { display: flex; min-height: 43px; align-items: center; gap: 10px; padding: 8px 9px; border: 0; border-radius: 8px; background: transparent; color: #3c342d; font-size: 14px; font-weight: 600; text-align: left; cursor: pointer; }

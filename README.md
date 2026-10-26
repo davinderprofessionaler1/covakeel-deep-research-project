@@ -2,6 +2,8 @@
 
 Local-first CoVakeel prototype with a responsive browser interface, a small Python API, and private Ollama inference. It is intentionally dependency-free so it can run on the current development laptop without PHP, Composer, Node.js, or Docker.
 
+The repository also contains the separate `landing-page/` user application and `admin/` administration application. Each has its own React frontend and Node.js API. Shared branding and encrypted SMTP configuration are stored under the ignored `storage/admin/` directory.
+
 ## Architecture
 
 ```text

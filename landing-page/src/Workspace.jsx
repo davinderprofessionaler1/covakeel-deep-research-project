@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { BrandMark } from "./Branding.jsx";
 
 const suggestedPrompts = [
   "Explain Article 14 of the Constitution of India",
@@ -65,7 +66,7 @@ function Sidebar({ user, conversations, activeId, onSearch, onSelect, onNew, onS
       {open && <button className="workspace-overlay" aria-label="Close sidebar" type="button" onClick={onClose} />}
       <aside className={`workspace-sidebar ${open ? "open" : ""}`}>
         <div className="workspace-brand-row">
-          <a className="workspace-brand" href="/"><span>⚖</span> CoVakeel</a>
+          <a className="workspace-brand" href="/"><BrandMark /></a>
           <button className="sidebar-close" type="button" aria-label="Close sidebar" onClick={onClose}>×</button>
         </div>
         <nav className="workspace-nav" aria-label="Workspace navigation">

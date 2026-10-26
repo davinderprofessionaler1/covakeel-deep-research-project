@@ -1,5 +1,7 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import KnowledgeBase from "./KnowledgeBase.jsx";
+import LoginPage from "./LoginPage.jsx";
+import Settings from "./Settings.jsx";
 
 const navigation = [
   { id: "overview", icon: "⌂", label: "Overview" },
@@ -7,6 +9,7 @@ const navigation = [
   { id: "users", icon: "♙", label: "Users" },
   { id: "conversations", icon: "◫", label: "Conversations" },
   { id: "system", icon: "◉", label: "System health" },
+  { id: "settings", icon: "⚙", label: "Settings" },
 ];
 
 const emptyDashboard = {
@@ -26,12 +29,12 @@ function StatusBadge({ status }) {
   return <span className={`status-badge ${normalized}`}><i />{normalized === "online" ? "Online" : normalized === "offline" ? "Offline" : "Checking"}</span>;
 }
 
-function Sidebar({ activePage, onNavigate, open, onClose }) {
+function Sidebar({ activePage, onNavigate, open, onClose, admin, branding, onLogout }) {
   return (
     <>
       {open && <button className="sidebar-overlay" type="button" aria-label="Close navigation" onClick={onClose} />}
       <aside className={`admin-sidebar ${open ? "open" : ""}`}>
-        <div className="admin-brand"><span>⚖</span><div>CoVakeel<small>Administration</small></div><button type="button" aria-label="Close navigation" onClick={onClose}>×</button></div>
+        <div className="admin-brand">{branding.logoUrl ? <img src={branding.logoUrl} alt="" /> : <span>⚖</span>}<div>{branding.brandName}<small>Administration</small></div><button type="button" aria-label="Close navigation" onClick={onClose}>×</button></div>
         <nav aria-label="Admin navigation">
           {navigation.map((item) => (
             <button className={activePage === item.id ? "active" : ""} type="button" key={item.id} onClick={() => { onNavigate(item.id); onClose(); }}>
@@ -40,8 +43,9 @@ function Sidebar({ activePage, onNavigate, open, onClose }) {
           ))}
         </nav>
         <div className="admin-sidebar-foot">
-          <div className="admin-avatar">A</div>
-          <div><strong>Local administrator</strong><small>Development access</small></div>
+          <div className="admin-avatar">{admin.name.slice(0, 1).toUpperCase()}</div>
+          <div><strong>{admin.name}</strong><small>{admin.email}</small></div>
+          <button className="sidebar-logout" type="button" onClick={onLogout} aria-label="Log out">↪</button>
         </div>
       </aside>
     </>
@@ -91,7 +95,7 @@ function Overview({ dashboard, loading, error, onRefresh }) {
         <article className="admin-panel next-panel">
           <div className="panel-heading"><div><span className="eyebrow">Implementation</span><h2>Next admin modules</h2></div></div>
           <ol className="next-list">
-            <li><span>01</span><div><strong>Secure admin authentication</strong><small>Roles, sessions and audit events</small></div></li>
+            <li><span>01</span><div><strong>Secure admin authentication</strong><small>Login, profile and password controls connected</small></div></li>
             <li><span>02</span><div><strong>Knowledge review workflow</strong><small>Approve or reject pending legal records</small></div></li>
             <li><span>03</span><div><strong>User management</strong><small>Search, suspend and inspect user activity</small></div></li>
           </ol>
@@ -115,11 +119,27 @@ function ModulePlaceholder({ page }) {
 }
 
 export default function App() {
+  const [sessionLoading, setSessionLoading] = useState(true);
+  const [admin, setAdmin] = useState(null);
   const [activePage, setActivePage] = useState("overview");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [dashboard, setDashboard] = useState(emptyDashboard);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [branding, setBranding] = useState({ brandName: "CoVakeel", logoUrl: "" });
+
+  const updateBranding = useCallback((value) => setBranding(value), []);
+
+  useEffect(() => {
+    fetch("/api/admin/auth/session", { credentials: "include" })
+      .then(async (response) => {
+        if (!response.ok) return null;
+        return response.json();
+      })
+      .then((result) => setAdmin(result?.admin || null))
+      .catch(() => setAdmin(null))
+      .finally(() => setSessionLoading(false));
+  }, []);
 
   const loadDashboard = async () => {
     setLoading(true);
@@ -136,21 +156,38 @@ export default function App() {
     }
   };
 
-  useEffect(() => { loadDashboard(); }, []);
+  useEffect(() => {
+    if (!admin) return;
+    loadDashboard();
+    fetch("/api/admin/settings", { credentials: "include" })
+      .then((response) => response.ok ? response.json() : null)
+      .then((result) => { if (result?.branding) setBranding(result.branding); })
+      .catch(() => {});
+  }, [admin]);
+
+  const logout = async () => {
+    await fetch("/api/admin/auth/logout", { method: "POST", credentials: "include" }).catch(() => {});
+    setAdmin(null);
+    setActivePage("overview");
+  };
+
+  if (sessionLoading) return <div className="admin-session-loading"><span>⚖</span><p>Opening CoVakeel Admin…</p></div>;
+  if (!admin) return <LoginPage onLogin={setAdmin} />;
 
   return (
     <div className="admin-shell">
-      <Sidebar activePage={activePage} onNavigate={setActivePage} open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      <Sidebar activePage={activePage} onNavigate={setActivePage} open={sidebarOpen} onClose={() => setSidebarOpen(false)} admin={admin} branding={branding} onLogout={logout} />
       <main className="admin-main">
         <header className="admin-header">
           <button className="mobile-menu" type="button" aria-label="Open navigation" onClick={() => setSidebarOpen(true)}>☰</button>
           <div><strong>{navigation.find((item) => item.id === activePage)?.label}</strong><small>CoVakeel Admin</small></div>
-          <div className="header-status"><StatusBadge status={error ? "offline" : loading ? "pending" : "online"} /><span className="admin-avatar small">A</span></div>
+          <div className="header-status"><StatusBadge status={error ? "offline" : loading ? "pending" : "online"} /><button className="header-account" type="button" onClick={() => setActivePage("settings")}><span className="admin-avatar small">{admin.name.slice(0, 1).toUpperCase()}</span><b>{admin.name}</b></button><button className="header-logout" type="button" onClick={logout}>Log out</button></div>
         </header>
         <div className="admin-content">
           {activePage === "overview" && <Overview dashboard={dashboard} loading={loading} error={error} onRefresh={loadDashboard} />}
           {activePage === "knowledge" && <KnowledgeBase />}
-          {!['overview', 'knowledge'].includes(activePage) && <ModulePlaceholder page={activePage} />}
+          {activePage === "settings" && <Settings admin={admin} onAdminUpdated={setAdmin} onPasswordChanged={() => setAdmin(null)} onBrandingUpdated={updateBranding} />}
+          {!['overview', 'knowledge', 'settings'].includes(activePage) && <ModulePlaceholder page={activePage} />}
         </div>
       </main>
     </div>
