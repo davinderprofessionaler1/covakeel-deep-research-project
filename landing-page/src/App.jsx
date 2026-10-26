@@ -323,10 +323,10 @@ function AuthPage() {
             <button type="button" role="tab" aria-selected={mode === "signup"} className={mode === "signup" ? "active" : ""} onClick={() => chooseMode("signup")}>Create Account</button>
           </div>
 
-          {!availability.loading && (
-            <div className={`auth-service-state ${availability.ready ? "ready" : "unavailable"}`} role="status">
-              <span>{availability.ready ? "●" : "!"}</span>
-              {availability.ready ? "Secure email OTP delivery is active." : "Email verification is temporarily unavailable. Please try again later."}
+          {!availability.loading && !availability.ready && (
+            <div className="auth-service-state unavailable" role="status">
+              <span>!</span>
+              Email verification is temporarily unavailable. Please try again later.
             </div>
           )}
 
