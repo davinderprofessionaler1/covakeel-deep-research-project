@@ -60,6 +60,46 @@ export async function findUserByEmail(email) {
   return result.rows[0] || null;
 }
 
+export async function listRegisteredUsers({ search = "", page = 1, pageSize = 25 } = {}) {
+  const database = getPool();
+  if (!database) throw new Error("PostgreSQL is not configured.");
+  const offset = (page - 1) * pageSize;
+  const [users, total, summary] = await Promise.all([
+    database.query(
+      `SELECT u.id, u.email, u.email_verified_at, u.created_at, u.updated_at,
+              COUNT(DISTINCT c.id)::int AS conversation_count,
+              COUNT(DISTINCT m.id)::int AS message_count,
+              GREATEST(MAX(s.last_seen_at), MAX(c.updated_at), u.created_at) AS last_active_at
+       FROM users u
+       LEFT JOIN conversations c ON c.user_id = u.id
+       LEFT JOIN conversation_messages m ON m.conversation_id = c.id
+       LEFT JOIN user_sessions s ON s.user_id = u.id
+       WHERE ($1 = '' OR u.email ILIKE '%' || $1 || '%')
+       GROUP BY u.id
+       ORDER BY u.created_at DESC
+       LIMIT $2 OFFSET $3`,
+      [search, pageSize, offset],
+    ),
+    database.query(
+      `SELECT COUNT(*)::int AS count
+       FROM users
+       WHERE ($1 = '' OR email ILIKE '%' || $1 || '%')`,
+      [search],
+    ),
+    database.query(
+      `SELECT COUNT(DISTINCT u.id) FILTER (WHERE u.email_verified_at IS NOT NULL)::int AS verified,
+              COUNT(DISTINCT c.id)::int AS conversations,
+              COUNT(DISTINCT m.id)::int AS messages
+       FROM users u
+       LEFT JOIN conversations c ON c.user_id = u.id
+       LEFT JOIN conversation_messages m ON m.conversation_id = c.id
+       WHERE ($1 = '' OR u.email ILIKE '%' || $1 || '%')`,
+      [search],
+    ),
+  ]);
+  return { users: users.rows, total: total.rows[0]?.count || 0, summary: summary.rows[0] || { verified: 0, conversations: 0, messages: 0 } };
+}
+
 export async function saveOtp({ email, intent, codeHash, expiresAt }) {
   const database = getPool();
   if (!database) throw new Error("PostgreSQL is not configured.");

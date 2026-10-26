@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import KnowledgeBase from "./KnowledgeBase.jsx";
 import LoginPage from "./LoginPage.jsx";
 import Settings from "./Settings.jsx";
+import Users from "./Users.jsx";
 
 const navigation = [
   { id: "overview", icon: "⌂", label: "Overview" },
@@ -93,11 +94,11 @@ function Overview({ dashboard, loading, error, onRefresh }) {
           </div>
         </article>
         <article className="admin-panel next-panel">
-          <div className="panel-heading"><div><span className="eyebrow">Implementation</span><h2>Next admin modules</h2></div></div>
+          <div className="panel-heading"><div><span className="eyebrow">Implementation</span><h2>Admin modules</h2></div></div>
           <ol className="next-list">
             <li><span>01</span><div><strong>Secure admin authentication</strong><small>Login, profile and password controls connected</small></div></li>
             <li><span>02</span><div><strong>Knowledge review workflow</strong><small>Approve or reject pending legal records</small></div></li>
-            <li><span>03</span><div><strong>User management</strong><small>Search, suspend and inspect user activity</small></div></li>
+            <li><span>03</span><div><strong>User directory</strong><small>Verified signup search and activity counts connected</small></div></li>
           </ol>
         </article>
       </section>
@@ -186,8 +187,9 @@ export default function App() {
         <div className="admin-content">
           {activePage === "overview" && <Overview dashboard={dashboard} loading={loading} error={error} onRefresh={loadDashboard} />}
           {activePage === "knowledge" && <KnowledgeBase />}
+          {activePage === "users" && <Users />}
           {activePage === "settings" && <Settings admin={admin} onAdminUpdated={setAdmin} onPasswordChanged={() => setAdmin(null)} onBrandingUpdated={updateBranding} />}
-          {!['overview', 'knowledge', 'settings'].includes(activePage) && <ModulePlaceholder page={activePage} />}
+          {!['overview', 'knowledge', 'users', 'settings'].includes(activePage) && <ModulePlaceholder page={activePage} />}
         </div>
       </main>
     </div>

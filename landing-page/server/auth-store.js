@@ -4,6 +4,7 @@ import {
   deleteSession as deleteDatabaseSession,
   findUserByEmail,
   isDatabaseConfigured,
+  listRegisteredUsers,
   readLatestOtp,
   readSession as readDatabaseSession,
   recordFailedOtpAttempt,
@@ -72,10 +73,13 @@ export async function getOrCreateVerifiedUser(email) {
 export async function saveSession(payload) {
   if (!usesDevelopmentStore()) return saveDatabaseSession(payload);
   const user = [...memory.users.values()].find((candidate) => candidate.id === payload.userId);
+  const now = new Date();
   memory.sessions.set(payload.tokenHash, {
     user_id: payload.userId,
     email: user.email,
     expires_at: payload.expiresAt,
+    created_at: now,
+    last_seen_at: now,
   });
 }
 
@@ -86,10 +90,39 @@ export async function getSession(tokenHash) {
     memory.sessions.delete(tokenHash);
     return null;
   }
+  session.last_seen_at = new Date();
   return session;
 }
 
 export async function deleteSession(tokenHash) {
   if (!usesDevelopmentStore()) return deleteDatabaseSession(tokenHash);
   memory.sessions.delete(tokenHash);
+}
+
+export async function listUsers({ search = "", page = 1, pageSize = 25 } = {}) {
+  if (!usesDevelopmentStore()) return listRegisteredUsers({ search, page, pageSize });
+  const needle = search.trim().toLowerCase();
+  const allUsers = [...memory.users.values()]
+    .filter((user) => !needle || user.email.toLowerCase().includes(needle))
+    .sort((left, right) => new Date(right.created_at) - new Date(left.created_at));
+  const start = (page - 1) * pageSize;
+  const users = allUsers.slice(start, start + pageSize).map((user) => {
+    const sessions = [...memory.sessions.values()].filter((session) => session.user_id === user.id);
+    const lastActive = sessions.reduce((latest, session) => Math.max(latest, new Date(session.last_seen_at).getTime()), 0);
+    return {
+      ...user,
+      conversation_count: 0,
+      message_count: 0,
+      last_active_at: lastActive ? new Date(lastActive) : user.created_at,
+    };
+  });
+  return {
+    users,
+    total: allUsers.length,
+    summary: {
+      verified: allUsers.filter((user) => user.email_verified_at).length,
+      conversations: 0,
+      messages: 0,
+    },
+  };
 }

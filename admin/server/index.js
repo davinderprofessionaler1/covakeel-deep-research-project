@@ -8,6 +8,7 @@ import { dashboardRouter } from "./routes/dashboard.js";
 import { knowledgeRouter } from "./routes/knowledge.js";
 import { authRouter } from "./routes/auth.js";
 import { settingsRouter } from "./routes/settings.js";
+import { usersRouter } from "./routes/users.js";
 import { requireAdmin } from "./services/admin-auth.js";
 
 const app = express();
@@ -26,6 +27,7 @@ app.get("/api/admin/health", (_request, response) => {
 app.use("/api/admin", authRouter);
 app.use("/api/admin", settingsRouter);
 app.use("/api/admin", requireAdmin, dashboardRouter);
+app.use("/api/admin", requireAdmin, usersRouter);
 app.use("/api/admin", requireAdmin, knowledgeRouter);
 
 if (production) {

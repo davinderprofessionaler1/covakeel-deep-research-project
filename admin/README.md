@@ -35,6 +35,8 @@ The Settings module provides:
 - password changes that revoke all active administrator sessions
 - SMTP configuration used by the landing API for OTP and transactional email
 
+The Users module reads verified signups from the landing application through a private server-to-server endpoint. It supports email search, pagination, verification state, signup and last-active dates, plus conversation and message counts. Use the same strong `ADMIN_INTERNAL_API_KEY` in `admin/.env` and `landing-page/.env` for production.
+
 On the first local run, use the values from `ADMIN_INITIAL_EMAIL` and `ADMIN_INITIAL_PASSWORD`. Without an `.env` file, the local-only fallback is `admin@covakeel.local` / `Admin@12345`. The settings file is created under the ignored root `storage/admin/` directory. Changing those environment variables later does not overwrite an existing administrator. Production refuses to create its first administrator unless `ADMIN_INITIAL_PASSWORD` is explicitly configured.
 
 Use the same strong `ADMIN_SETTINGS_SECRET` in both `admin/.env` and `landing-page/.env`; it encrypts the stored SMTP password. Set `COOKIE_SECURE=true` behind HTTPS in production. Role-based access control, durable session storage and audit logging should be completed before a multi-admin production launch.

@@ -1,6 +1,7 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { getRegisteredUsers } from "./users.js";
 
 const adminRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const projectRoot = path.resolve(adminRoot, "..");
@@ -33,19 +34,24 @@ async function checkService(id, name, icon, url, detail) {
 export async function getDashboard() {
   const pendingPath = path.join(projectRoot, "knowledge/phase1/pending/phase1-all.pending.jsonl");
   const approvedPath = path.join(projectRoot, "knowledge/approved/chunks.jsonl");
-  const [pendingRecords, approvedRecords, landingService, aiService] = await Promise.all([
+  const [pendingRecords, approvedRecords, landingService, aiService, registeredUsers] = await Promise.all([
     countJsonLines(pendingPath),
     countJsonLines(approvedPath),
     checkService("landing", "User application API", "◫", `${process.env.LANDING_API_URL || "http://127.0.0.1:3001"}/api/health`, "Node.js landing backend"),
     checkService("ai", "Legal AI service", "⚖", `${process.env.AI_SERVICE_URL || "http://127.0.0.1:8080"}/api/health`, "Local RAG and LLM service"),
+    getRegisteredUsers({ page: 1, pageSize: 1 }).catch(() => null),
   ]);
 
   return {
     environment: process.env.NODE_ENV === "production" ? "Production" : "Local development",
     generatedAt: new Date().toISOString(),
     metrics: {
-      registeredUsers: { value: "—", note: "Available after PostgreSQL setup" },
-      conversations: { value: "—", note: "Available after PostgreSQL setup" },
+      registeredUsers: registeredUsers
+        ? { value: registeredUsers.total.toLocaleString("en-IN"), note: registeredUsers.source === "postgresql" ? "Verified database signups" : "Local verified signups" }
+        : { value: "—", note: "User service unavailable" },
+      conversations: registeredUsers
+        ? { value: Number(registeredUsers.summary?.conversations || 0).toLocaleString("en-IN"), note: "User research threads" }
+        : { value: "—", note: "User service unavailable" },
       approvedRecords: { value: approvedRecords.toLocaleString("en-IN"), note: "Approved knowledge chunks" },
       pendingRecords: { value: pendingRecords.toLocaleString("en-IN"), note: "Awaiting legal review" },
     },
