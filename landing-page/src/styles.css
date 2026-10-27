@@ -478,7 +478,7 @@ h3 { font-size: 23px; }
 }
 
 .shared-brand { display: inline-flex; align-items: center; line-height: 1; }
-.shared-brand > img { width: 205px; height: auto; border-radius: 0; background: transparent; object-fit: contain; }
+.shared-brand > img { width: 205px; height: auto; border-radius: 0; background: transparent; object-fit: contain; mix-blend-mode: screen; }
 .shared-brand.compact > img { width: 150px; height: auto; }
 
 .exact-landing { min-height: 100vh; overflow: hidden; background: var(--brand-green); color: var(--cream); font-family: "DM Sans", Arial, sans-serif; }
