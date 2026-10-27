@@ -109,7 +109,7 @@ async function fetchSourcePdf(source, download = false) {
   return response;
 }
 
-function SourceDownloadButton({ source, className, label }) {
+function SourceDownloadButton({ source, className, label, children }) {
   const [downloading, setDownloading] = useState(false);
 
   const download = async () => {
@@ -142,9 +142,21 @@ function SourceDownloadButton({ source, className, label }) {
       title="Download PDF"
       onClick={download}
     >
-      {downloading ? <span className="download-spinner" aria-hidden="true" /> : "↓"}
+      {downloading ? <span className="download-spinner" aria-hidden="true" /> : (children || <InterfaceIcon name="download" />)}
     </button>
   );
+}
+
+function InterfaceIcon({ name }) {
+  const common = { viewBox: "0 0 24 24", "aria-hidden": true };
+  if (name === "previous") return <svg {...common}><path d="m15 5-7 7 7 7" /></svg>;
+  if (name === "next") return <svg {...common}><path d="m9 5 7 7-7 7" /></svg>;
+  if (name === "download") return <svg {...common}><path d="M12 3v12m-5-5 5 5 5-5M5 20h14" /></svg>;
+  if (name === "print") return <svg {...common}><path d="M7 9V3h10v6M7 17H4v-7h16v7h-3M7 14h10v7H7z" /><path d="M17 12h.01" /></svg>;
+  if (name === "expand") return <svg {...common}><path d="M8 3H3v5M16 3h5v5M3 16v5h5M21 16v5h-5" /></svg>;
+  if (name === "collapse") return <svg {...common}><path d="M8 3v5H3M16 3v5h5M8 21v-5H3M16 21v-5h5" /></svg>;
+  if (name === "close") return <svg {...common}><path d="m5 5 14 14M19 5 5 19" /></svg>;
+  return null;
 }
 
 function groupLabel(dateValue) {
@@ -422,13 +434,12 @@ function PdfIcon() {
   );
 }
 
-function PdfCanvasPreview({ source }) {
+function PdfCanvasPreview({ source, expanded, onToggleExpanded, onClose }) {
   const canvasRef = useRef(null);
   const viewportRef = useRef(null);
   const [pdfDocument, setPdfDocument] = useState(null);
   const [pageNumber, setPageNumber] = useState(1);
   const [pageCount, setPageCount] = useState(0);
-  const [zoom, setZoom] = useState(1);
   const [containerWidth, setContainerWidth] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -495,7 +506,7 @@ function PdfCanvasPreview({ source }) {
         const baseViewport = page.getViewport({ scale: 1 });
         const availableWidth = Math.max(260, viewportRef.current.clientWidth - 34);
         const fitScale = Math.min(1.75, availableWidth / baseViewport.width);
-        const viewport = page.getViewport({ scale: fitScale * zoom });
+        const viewport = page.getViewport({ scale: fitScale });
         const canvas = canvasRef.current;
         const context = canvas.getContext("2d", { alpha: false });
         const outputScale = Math.min(window.devicePixelRatio || 1, 2);
@@ -520,18 +531,45 @@ function PdfCanvasPreview({ source }) {
       cancelled = true;
       if (renderTask) renderTask.cancel();
     };
-  }, [pdfDocument, pageNumber, zoom, containerWidth]);
+  }, [pdfDocument, pageNumber, containerWidth]);
+
+  const printCurrentPage = () => {
+    const canvas = canvasRef.current;
+    if (!canvas || loading || error) return;
+    const frame = document.createElement("iframe");
+    frame.className = "pdf-print-frame";
+    frame.setAttribute("title", "Print PDF page");
+    document.body.appendChild(frame);
+    const frameDocument = frame.contentDocument;
+    frameDocument.open();
+    frameDocument.write(`<!doctype html><html><head><title>CoVakeel PDF</title><style>@page{margin:10mm}body{margin:0;text-align:center}img{max-width:100%;height:auto}</style></head><body><img src="${canvas.toDataURL("image/png")}" alt="PDF page"></body></html>`);
+    frameDocument.close();
+    window.setTimeout(() => {
+      frame.contentWindow.focus();
+      frame.contentWindow.print();
+      window.setTimeout(() => frame.remove(), 1000);
+    }, 120);
+  };
 
   return (
     <div className="pdf-preview-body">
-      <div className="pdf-preview-toolbar" aria-label="PDF controls">
-        <button type="button" disabled={pageNumber <= 1 || loading} onClick={() => setPageNumber((page) => Math.max(1, page - 1))} aria-label="Previous page">←</button>
-        <span>Page <strong>{pageNumber}</strong> of <strong>{pageCount || "—"}</strong></span>
-        <button type="button" disabled={pageNumber >= pageCount || loading} onClick={() => setPageNumber((page) => Math.min(pageCount, page + 1))} aria-label="Next page">→</button>
-        <span className="pdf-preview-toolbar-spacer" />
-        <button type="button" disabled={zoom <= 0.75 || loading} onClick={() => setZoom((value) => Math.max(0.75, value - 0.25))} aria-label="Zoom out">−</button>
-        <span>{Math.round(zoom * 100)}%</span>
-        <button type="button" disabled={zoom >= 2 || loading} onClick={() => setZoom((value) => Math.min(2, value + 0.25))} aria-label="Zoom in">＋</button>
+      <div className="pdf-preview-topbar" aria-label="PDF controls">
+        <div className="pdf-preview-pagination">
+          <button type="button" disabled={pageNumber <= 1 || loading} onClick={() => setPageNumber((page) => Math.max(1, page - 1))} aria-label="Previous page" title="Previous page"><InterfaceIcon name="previous" /></button>
+          <strong>{pageNumber}/{pageCount || "—"}</strong>
+          <button type="button" disabled={pageNumber >= pageCount || loading} onClick={() => setPageNumber((page) => Math.min(pageCount, page + 1))} aria-label="Next page" title="Next page"><InterfaceIcon name="next" /></button>
+        </div>
+        <div className="pdf-preview-actions">
+          <button type="button" disabled={loading || Boolean(error)} onClick={printCurrentPage} aria-label="Print current PDF page" title="Print current page"><InterfaceIcon name="print" /></button>
+          <SourceDownloadButton source={source} className="source-preview-action" label="Download PDF"><InterfaceIcon name="download" /></SourceDownloadButton>
+          <button type="button" onClick={onToggleExpanded} aria-label={expanded ? "Restore PDF preview size" : "Expand PDF preview"} title={expanded ? "Restore preview size" : "Expand preview"}><InterfaceIcon name={expanded ? "collapse" : "expand"} /></button>
+          <button type="button" onClick={onClose} aria-label="Close PDF preview" title="Close preview"><InterfaceIcon name="close" /></button>
+        </div>
+      </div>
+      <div className="pdf-preview-meta">
+        <span>Official PDF</span>
+        <strong id="source-preview-title" title={source.title}>{source.title}</strong>
+        <small>{source.hostname}</small>
       </div>
       <div className="pdf-preview-scroll" ref={viewportRef}>
         {loading && <div className="pdf-preview-status"><span className="pdf-loading-spinner" /><strong>Loading official PDF…</strong></div>}
@@ -549,6 +587,8 @@ function PdfCanvasPreview({ source }) {
 }
 
 function SourceDrawer({ source, onClose }) {
+  const [expanded, setExpanded] = useState(false);
+
   useEffect(() => {
     if (!source) return undefined;
     const closeOnEscape = (event) => { if (event.key === "Escape") onClose(); };
@@ -563,17 +603,8 @@ function SourceDrawer({ source, onClose }) {
   if (!source) return null;
   return (
     <div className="source-preview-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
-      <aside className="source-preview-drawer" role="dialog" aria-modal="true" aria-labelledby="source-preview-title">
-        <header>
-          <div>
-            <span>Official PDF source</span>
-            <strong id="source-preview-title" title={source.title}>{source.title}</strong>
-            <small>{source.hostname}</small>
-          </div>
-          <SourceDownloadButton source={source} className="source-preview-download" label="Download PDF" />
-          <button type="button" aria-label="Close PDF preview" title="Close preview" onClick={onClose}>×</button>
-        </header>
-        <PdfCanvasPreview source={source} />
+      <aside className={`source-preview-drawer ${expanded ? "expanded" : ""}`} role="dialog" aria-modal="true" aria-labelledby="source-preview-title">
+        <PdfCanvasPreview source={source} expanded={expanded} onToggleExpanded={() => setExpanded((value) => !value)} onClose={onClose} />
       </aside>
     </div>
   );
