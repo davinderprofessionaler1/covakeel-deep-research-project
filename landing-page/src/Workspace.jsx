@@ -82,7 +82,7 @@ function extractPdfSources(value) {
 }
 
 function sourceFileUrl(source, download = false) {
-  return `/api/source-file?url=${encodeURIComponent(source.url)}${download ? "&download=1" : ""}`;
+  return `/api/source-file?url=${encodeURIComponent(source.url)}&viewer=pdfjs-v2${download ? "&download=1" : ""}`;
 }
 
 function sourceFilename(source, response) {
@@ -100,7 +100,12 @@ function sourceFilename(source, response) {
 }
 
 async function fetchSourcePdf(source, download = false) {
-  const response = await fetch(sourceFileUrl(source, download), { credentials: "include" });
+  const requestUrl = `${sourceFileUrl(source, download)}&request=${Date.now()}`;
+  const response = await fetch(requestUrl, {
+    credentials: "include",
+    cache: "no-store",
+    headers: { Accept: "application/pdf" },
+  });
   const contentType = response.headers.get("content-type") || "";
   if (!response.ok) throw new Error(`The PDF could not be loaded (${response.status}).`);
   if (!contentType.toLowerCase().includes("application/pdf")) {

@@ -371,6 +371,7 @@ h3 { font-size: 23px; }
 .pdf-preview-meta > small { margin-top: 5px; overflow: hidden; color: #637286; font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
 .pdf-preview-scroll { position: relative; min-width: 0; min-height: 0; overflow: auto; padding: 22px; text-align: center; }
 .pdf-preview-scroll canvas { display: block; max-width: none; margin: 0 auto; background: #fff; box-shadow: 0 8px 28px rgba(29, 21, 14, .2); }
+.pdf-preview-scroll canvas[hidden] { display: none; }
 .pdf-preview-status { position: absolute; inset: 0; display: grid; place-items: center; align-content: center; gap: 12px; padding: 30px; color: #6d5c4b; text-align: center; }
 .pdf-preview-status .pdf-loading-spinner { width: 28px; height: 28px; border-width: 3px; color: var(--gold); }
 .pdf-preview-status.error strong { color: #713b31; font: 700 20px "Playfair Display", Georgia, serif; }
