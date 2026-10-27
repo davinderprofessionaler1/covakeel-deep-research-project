@@ -8,7 +8,11 @@ import time
 from urllib.parse import urlparse
 
 from backend.config import PROJECT_ROOT, Settings
-from backend.legal_scope import REFUSAL_MESSAGE, is_legal_query
+from backend.legal_scope import (
+    REFUSAL_MESSAGE,
+    contextual_followup_response,
+    is_legal_conversation,
+)
 from backend.providers.base import ChatMessage
 from backend.providers.ollama import OllamaError, OllamaProvider
 
@@ -100,7 +104,12 @@ class CoVakeelHandler(SimpleHTTPRequestHandler):
                 else "Searching approved knowledge…"
             )
             self._event({"type": "status", "message": search_message})
-            if not is_legal_query(messages[-1].content):
+            followup_response = contextual_followup_response(messages)
+            if followup_response:
+                self._event({"type": "token", "content": followup_response})
+                self._event({"type": "done", "elapsed_ms": round((time.monotonic() - started) * 1000)})
+                return
+            if not is_legal_conversation(messages):
                 self._event({"type": "token", "content": REFUSAL_MESSAGE})
                 self._event({"type": "done", "elapsed_ms": round((time.monotonic() - started) * 1000)})
                 return

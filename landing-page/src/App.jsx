@@ -215,6 +215,136 @@ function ContactModal({ open, onClose }) {
   );
 }
 
+function LandingIcon({ name }) {
+  const common = { fill: "none", stroke: "currentColor", strokeWidth: "1.8", strokeLinecap: "round", strokeLinejoin: "round" };
+  const paths = {
+    book: <><path d="M4 5.5c2.8-.8 5.1-.3 8 1.7v12c-2.9-2-5.2-2.5-8-1.7z"/><path d="M20 5.5c-2.8-.8-5.1-.3-8 1.7v12c2.9-2 5.2-2.5 8-1.7z"/></>,
+    shield: <><path d="M12 3 5 6v5c0 4.7 2.8 7.8 7 10 4.2-2.2 7-5.3 7-10V6z"/><path d="m9 12 2 2 4-5"/></>,
+    target: <><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/><path d="M15 9 21 3M17 3h4v4"/></>,
+    question: <><circle cx="12" cy="12" r="9"/><path d="M9.8 9a2.4 2.4 0 1 1 3.6 2.1c-1 .6-1.4 1.1-1.4 2.2M12 17h.01"/></>,
+    file: <><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v5h5M9 12h6M9 16h6"/></>,
+    search: <><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 5 5"/></>,
+    list: <><path d="M9 6h11M9 12h11M9 18h11"/><path d="M4 6h.01M4 12h.01M4 18h.01"/></>,
+    scales: <><path d="M12 3v18M7 21h10M5 6h14M7 6 3.5 13h7zM17 6 13.5 13h7z"/></>,
+    clock: <><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></>,
+    gavel: <><path d="m14 5 5 5M11 8l5 5M13 6 4 4M18 11l-4 4M3 21l8-8M8 20H3v-5"/></>,
+    users: <><circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M3 20c.4-4 2.3-6 6-6s5.6 2 6 6M15 15c3.6 0 5.5 1.7 6 5"/></>,
+    graduate: <><path d="m2 9 10-5 10 5-10 5z"/><path d="M6 11.5V16c3 2 9 2 12 0v-4.5M22 9v6"/></>,
+  };
+  return <svg className="landing-line-icon" viewBox="0 0 24 24" aria-hidden="true" {...common}>{paths[name] || paths.file}</svg>;
+}
+
+function ExactLanding() {
+  const features = [
+    ["book", "Readable.", "The law in clean, connected text, not scanned PDFs."],
+    ["shield", "Verifiable.", "Every answer carries its source. Nothing floats free."],
+    ["target", "Honest about scope.", "Research today. Drafting assistance next, on the same foundation."],
+  ];
+  const steps = [
+    ["question", "Ask.", "Type your question the way you would say it. If you have a notice in hand, describe what it says."],
+    ["file", "Read.", "The answer comes in plain language, with the section, rule or circular it rests on beside it."],
+    ["search", "Verify.", "Open any citation to check the official source and the provision supporting the answer."],
+    ["list", "Go deeper.", "Browse the connected material, continue with follow-up questions and save the research thread."],
+  ];
+  const uses = [
+    ["file", "Understanding a notice.", "Which provisions it rests on, what they require and the time limits involved."],
+    ["scales", "Checking a position before you act.", "Research whether a tax treatment, supply or deduction is covered."],
+    ["clock", "Tracking what changed.", "Read amendments and Finance Act provisions beside the principal material."],
+    ["gavel", "Finding the provision.", "Go directly to a cited Article, Section, Rule or form in the selected sources."],
+    ["users", "Preparing for a meeting.", "Keep every question and source-backed answer together in one saved thread."],
+    ["graduate", "Learning the subject.", "Explore the available Acts and Rules one focused question at a time."],
+  ];
+
+  return (
+    <div className="exact-landing">
+      <header className="landing-top">
+        <a className="landing-brand" href="#top" aria-label="CoVakeel home"><BrandMark /></a>
+        <nav className="landing-nav" aria-label="Account access">
+          <a className="landing-btn outline" href="/auth?mode=login">Sign In</a>
+          <a className="landing-btn primary" href="/auth?mode=signup">Sign Up</a>
+        </nav>
+      </header>
+
+      <main>
+        <section className="landing-hero" id="top">
+          <div className="landing-hero-content">
+            <h1>Draft what’s <em>next</em></h1>
+            <p>Your drafting partner for tax litigation — GST, Income Tax, Customs.</p>
+            <div className="landing-auth-actions">
+              <a href="/auth?mode=login">Sign in to your account</a>
+              <span>OR</span>
+              <a className="email" href="/auth?mode=signup">Continue with email</a>
+            </div>
+            <p className="landing-disclaimer">By continuing, you acknowledge our Privacy Policy and agree to receive essential account communications.</p>
+            <a className="landing-explore" href="#how-it-works">↓ <span>Explore how it works</span></a>
+          </div>
+        </section>
+
+        <div className="landing-content">
+          <div className="landing-wrap">
+            <div className="landing-intro"><span className="landing-eyebrow">Company · Platform</span></div>
+
+            <section className="landing-info" id="who-we-are">
+              <h2>Who we are</h2>
+              <p className="landing-section-lead">Indian tax law, made readable. For everyone who has to deal with it.</p>
+              <div className="landing-copy centered">
+                <p>CoVakeel is an AI research platform for GST, Income Tax and Customs.</p>
+                <p>Indian tax law lives across Acts, sections, rules, circulars, notifications, instructions and judgments. Finding the right provision is hard. Knowing whether it still applies is harder. CoVakeel brings the available law and its source together.</p>
+                <p>It is built for business owners, advocates, tax professionals, finance teams and students who need to understand what the available law says.</p>
+              </div>
+              <div className="landing-image wide"><img src="/assets/tax-law-books-v2.png" alt="GST, Income Tax and Customs law books" /></div>
+              <div className="landing-feature-grid">
+                {features.map(([icon, title, text]) => <article key={title}><LandingIcon name={icon} /><strong>{title}</strong><p>{text}</p></article>)}
+              </div>
+            </section>
+
+            <section className="landing-info" id="what-we-do">
+              <h2>What we do</h2>
+              <p className="landing-section-lead">A focused legal library, and an AI that works inside it.</p>
+              <div className="landing-two-column">
+                <div className="landing-copy">
+                  <p><strong>The library.</strong> Selected official GST legislation, amendment Acts, Finance Acts, Rules and forms, organized for reliable retrieval.</p>
+                  <p><strong>The connections.</strong> Related provisions and changes stay close to the answer, so the research can continue without losing context.</p>
+                  <p><strong>The AI.</strong> Ask a question in plain language. CoVakeel locates relevant material and keeps the official source beside the answer.</p>
+                </div>
+                <div className="landing-image"><img src="/assets/research-laptop-v2.png" alt="Laptop displaying legal research" /></div>
+              </div>
+            </section>
+
+            <section className="landing-info" id="how-it-works">
+              <h2>How it works</h2>
+              <p className="landing-section-lead">Ask. Read. Verify.</p>
+              <div className="landing-step-grid">
+                {steps.map(([icon, title, text]) => <article key={title}><LandingIcon name={icon} /><strong>{title}</strong><p>{text}</p></article>)}
+              </div>
+            </section>
+
+            <section className="landing-info" id="use-cases">
+              <h2>What should I use <em>CoVakeel</em> for?</h2>
+              <p className="landing-section-lead">Questions that begin with “what does the law actually say?”</p>
+              <div className="landing-use-grid">
+                {uses.map(([icon, title, text]) => <article key={title}><LandingIcon name={icon} /><strong>{title}</strong><p>{text}</p></article>)}
+              </div>
+            </section>
+          </div>
+        </div>
+      </main>
+
+      <footer className="landing-footer">
+        <div className="landing-wrap">
+          <div className="landing-footer-grid">
+            <div><a className="landing-brand footer-logo" href="#top"><BrandMark /></a><p>Indian tax-law research with official-source citations.</p><p className="footer-status">● Secure email access · Saved research workspace</p></div>
+            <div><h3>Company</h3><a href="#who-we-are">Who we are</a><a href="#what-we-do">What we do</a><a href="#how-it-works">How it works</a></div>
+            <div><h3>Research</h3><a href="#use-cases">What CoVakeel is for</a><a href="/auth?mode=login">Open workspace</a></div>
+            <div><h3>Account & support</h3><a href="/auth?mode=login">Sign in</a><a href="/auth?mode=signup">Create account</a></div>
+          </div>
+          <div className="landing-footer-bottom"><span>© 2026 CoVakeel. All rights reserved.</span><span>Research · Read · Verify</span></div>
+        </div>
+      </footer>
+    </div>
+  );
+}
+
 function AuthPage() {
   const initialMode = new URLSearchParams(window.location.search).get("mode") === "signup" ? "signup" : "login";
   const [mode, setMode] = useState(initialMode);
@@ -405,149 +535,7 @@ function AuthPage() {
 }
 
 export default function App() {
-  const [contactOpen, setContactOpen] = useState(false);
-
   if (window.location.pathname === "/auth") return <AuthPage />;
   if (window.location.pathname === "/workspace") return <Workspace />;
-
-  return (
-    <>
-      <Header onContact={() => setContactOpen(true)} />
-      <main>
-        <section className="hero" id="home">
-          <div className="wrap split">
-            <div className="hero-copy">
-              <span className="label">India-focused AI research & drafting</span>
-              <h1>Smarter Research.<br /><span className="gold">Better Decisions.</span></h1>
-              <p>Research answers with sources. Turn findings into professional drafts through a simple, thoughtful workspace.</p>
-              <div className="actions">
-                <a className="btn primary" href="#research">Try CoVakeel →</a>
-                <a className="btn" href="#workflow">See How It Works ↗</a>
-              </div>
-              <div className="ticks">
-                <span>Source-backed answers</span>
-                <span>India focused</span>
-                <span>Research to draft</span>
-              </div>
-            </div>
-            <ResearchDemo />
-          </div>
-        </section>
-
-        <section className="strip" aria-label="Platform highlights">
-          <div className="wrap stripgrid">
-            <div><span>◈</span>Source-backed Answers</div>
-            <div><span>◎</span>Deep Research</div>
-            <div><span>▤</span>AI Drafting</div>
-            <div><span>♧</span>Private Knowledge <small>planned</small></div>
-          </div>
-        </section>
-
-        <section className="section features" id="features">
-          <div className="wrap">
-            <div className="center section-heading">
-              <span className="label">Powerful capabilities</span>
-              <h2>Everything You Need for<br />Better Research</h2>
-              <p>Explore complex questions, understand supporting sources and turn your work into professional drafts.</p>
-            </div>
-            <div className="cards">
-              {features.map((feature) => (
-                <article className="card" key={feature.title}>
-                  <div className="icon" aria-hidden="true">{feature.icon}</div>
-                  <h3>{feature.title}</h3>
-                  <p>{feature.text}</p>
-                  <a href={feature.href}>Explore →</a>
-                </article>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section className="section workflow" id="workflow">
-          <div className="wrap split">
-            <div>
-              <span className="label">How it works</span>
-              <h2>From Question<br />to Draft in Minutes</h2>
-              <p>A simple workflow designed to keep research organized and understandable.</p>
-              {steps.map(([title, text], index) => (
-                <div className="step" key={title}>
-                  <b>{String(index + 1).padStart(2, "0")}</b>
-                  <div><strong>{title}</strong><p>{text}</p></div>
-                </div>
-              ))}
-            </div>
-            <div className="visual" aria-label="CoVakeel workspace preview">
-              <div className="laptop">
-                <div className="brand"><BrandMark /></div>
-                <h3>What would you like to research?</h3>
-                <div className="fake">Ask a question about Indian law, policy or compliance... <span>→</span></div>
-                <p className="preview-modes">Quick Research · Deep Research · Drafting</p>
-                <hr />
-                <p className="preview-copy">A research summary and source panel will appear here.</p>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section className="section uses" id="uses">
-          <div className="wrap center">
-            <span className="label">Made for focused work</span>
-            <h2>Built for Your Research Needs</h2>
-            <p>Designed for professionals and learners who need organized information and clear drafting tools.</p>
-            <div className="usegrid">
-              {useCases.map(([icon, title, text]) => (
-                <article className="use" key={title}>
-                  <div className="emoji" aria-hidden="true">{icon}</div>
-                  <h3>{title}</h3>
-                  <p>{text}</p>
-                </article>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section className="section why">
-          <div className="wrap split">
-            <div className="whyart" aria-hidden="true"><span>⚖</span></div>
-            <div>
-              <span className="label">Why CoVakeel</span>
-              <h2>More Clarity.<br />Better Research.<br />Stronger Drafts.</h2>
-              <p>CoVakeel is designed around a transparent workflow: investigate questions, inspect citations, save work and create editable drafts.</p>
-              <p>India is the default jurisdiction, with relevant Indian sources prioritized where appropriate.</p>
-              <a className="btn primary" href="#research">Start Research →</a>
-            </div>
-          </div>
-        </section>
-
-        <section className="cta" id="contact">
-          <div className="wrap ctabox">
-            <div>
-              <span className="label">A smarter way to work</span>
-              <h2>Research with More Confidence</h2>
-              <p>Explore an easier path from questions to professional drafts.</p>
-            </div>
-            <button className="btn primary" type="button" onClick={() => setContactOpen(true)}>Contact the Team →</button>
-          </div>
-        </section>
-      </main>
-
-      <footer className="footer">
-        <div className="wrap">
-          <div className="footgrid">
-            <div>
-              <div className="brand"><BrandMark /></div>
-              <p>AI Research · Deep Research · Source-backed Answers · AI Drafting</p>
-              <p>India-focused research and drafting platform.</p>
-            </div>
-            <div><h4>Product</h4><a href="#features">Features</a><a href="#workflow">How It Works</a><a href="#research">Research Preview</a></div>
-            <div><h4>Company</h4><a href="#uses">Use Cases</a><button type="button" onClick={() => setContactOpen(true)}>Contact</button><a href="#home">Back to Top</a></div>
-            <div><h4>Important</h4><p>AI-generated information can be inaccurate. Legal, tax and financial outputs require qualified professional review.</p></div>
-          </div>
-          <div className="bottom">© 2026 CoVakeel · Research and drafting platform.</div>
-        </div>
-      </footer>
-
-      <ContactModal open={contactOpen} onClose={() => setContactOpen(false)} />
-    </>
-  );
+  return <ExactLanding />;
 }

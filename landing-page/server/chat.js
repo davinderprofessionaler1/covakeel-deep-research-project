@@ -24,6 +24,37 @@ function sendEvent(response, payload) {
   response.write(`${JSON.stringify(payload)}\n`);
 }
 
+export function stripAssistantMetadata(value) {
+  const content = stripTestingNotice(value);
+  const markers = [
+    /\n+\s*Source\s*:/i,
+  ];
+  const positions = markers
+    .map((pattern) => content.search(pattern))
+    .filter((position) => position >= 0);
+  return (positions.length ? content.slice(0, Math.min(...positions)) : content).trim();
+}
+
+export function stripTestingNotice(value) {
+  return String(value || "")
+    .replace(/\n*\s*Testing data\s*[—-]\s*legal review pending\.\s*/gi, "\n\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
+function withoutTestingNotice(conversation) {
+  return {
+    ...conversation,
+    ...(conversation.preview !== undefined ? { preview: stripTestingNotice(conversation.preview) } : {}),
+    ...(Array.isArray(conversation.messages) ? {
+      messages: conversation.messages.map((message) => ({
+        ...message,
+        content: message.role === "assistant" ? stripTestingNotice(message.content) : message.content,
+      })),
+    } : {}),
+  };
+}
+
 function buildAttachmentContext(attachments) {
   const limit = 7_000;
   let remaining = limit;
@@ -48,7 +79,8 @@ export function registerChatRoutes(app) {
     const session = await authenticated(request, response);
     if (!session) return;
     const search = String(request.query.search || "").slice(0, 160);
-    response.json({ conversations: await listConversations(session.user_id, search) });
+    const conversations = await listConversations(session.user_id, search);
+    response.json({ conversations: conversations.map(withoutTestingNotice) });
   });
 
   app.post("/api/conversations", async (request, response) => {
@@ -63,7 +95,7 @@ export function registerChatRoutes(app) {
     if (!session) return;
     const conversation = await getConversation(session.user_id, request.params.id);
     if (!conversation) return response.status(404).json({ error: "Conversation not found." });
-    response.json(conversation);
+    response.json(withoutTestingNotice(conversation));
   });
 
   app.patch("/api/conversations/:id", async (request, response) => {
@@ -108,7 +140,7 @@ export function registerChatRoutes(app) {
       role: message.role,
       content: index === conversation.messages.length - 1 && message.role === "user"
         ? `${message.content}${attachmentContext}`.slice(0, 12_000)
-        : message.content,
+        : message.role === "assistant" ? stripAssistantMetadata(message.content) : message.content,
     }));
 
     response.status(200);
@@ -152,7 +184,7 @@ export function registerChatRoutes(app) {
         sendEvent(response, event);
       }
       if (assistantText.trim()) {
-        await addMessage({ userId: session.user_id, conversationId: conversation.id, role: "assistant", content: assistantText.trim(), elapsedMs });
+        await addMessage({ userId: session.user_id, conversationId: conversation.id, role: "assistant", content: stripTestingNotice(assistantText), elapsedMs });
       }
     } catch (error) {
       console.error("Workspace AI proxy failed:", error.message);

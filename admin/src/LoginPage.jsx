@@ -25,7 +25,7 @@ export default function LoginPage({ onLogin }) {
   return (
     <main className="admin-login-shell">
       <section className="admin-login-intro">
-        <div className="admin-login-brand"><span>⚖</span><strong>CoVakeel</strong><small>Administration</small></div>
+        <div className="admin-login-brand"><img src="/assets/covakeel-logo.webp" alt="CoVakeel" /><small>Administration</small></div>
         <div><span className="eyebrow">Protected workspace</span><h1>Manage legal knowledge with control.</h1><p>Sign in to manage CoVakeel branding, legal sources, administrators and delivery settings.</p></div>
         <p className="admin-login-note">Admin sessions use an HTTP-only cookie and expire automatically.</p>
       </section>

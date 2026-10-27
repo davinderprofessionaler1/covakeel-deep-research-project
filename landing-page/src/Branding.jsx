@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 
 const BrandingContext = createContext({ brandName: "CoVakeel", logoUrl: "", updatedAt: null });
+const DEFAULT_LOGO_URL = "/assets/covakeel-logo.webp";
 
 export function BrandingProvider({ children }) {
   const [branding, setBranding] = useState({ brandName: "CoVakeel", logoUrl: "", updatedAt: null });
@@ -16,11 +17,12 @@ export function BrandingProvider({ children }) {
 
 export function BrandMark({ compact = false }) {
   const branding = useContext(BrandingContext);
-  const logoUrl = branding.logoUrl ? `${branding.logoUrl}?v=${encodeURIComponent(branding.updatedAt || "current")}` : "";
+  const logoUrl = branding.logoUrl
+    ? `${branding.logoUrl}?v=${encodeURIComponent(branding.updatedAt || "current")}`
+    : DEFAULT_LOGO_URL;
   return (
     <span className={`shared-brand ${compact ? "compact" : ""}`}>
-      {logoUrl ? <img src={logoUrl} alt="" /> : <span className="shared-brand-fallback" aria-hidden="true">⚖</span>}
-      <span>{branding.brandName || "CoVakeel"}</span>
+      <img src={logoUrl} alt={branding.brandName || "CoVakeel"} />
     </span>
   );
 }

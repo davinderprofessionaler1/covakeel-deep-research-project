@@ -104,7 +104,7 @@ export default function Settings({ admin, onAdminUpdated, onPasswordChanged, onB
         <article className="settings-card branding-card">
           <div className="settings-card-head"><span className="settings-icon">◇</span><div><h2>Brand identity</h2><p>The logo is shared by admin, landing page and user workspace.</p></div></div>
           <div className="logo-editor">
-            <div className="logo-preview">{settings.branding.logoUrl ? <img src={settings.branding.logoUrl} alt="Current CoVakeel logo" /> : <span>⚖</span>}</div>
+            <div className="logo-preview"><img src={settings.branding.logoUrl || "/assets/covakeel-logo.webp"} alt="Current CoVakeel logo" /></div>
             <div><label className="file-button">Upload logo<input type="file" accept="image/png,image/jpeg,image/webp" onChange={uploadLogo} /></label><small>PNG, JPG or WebP. Maximum 2 MB.</small></div>
           </div>
           <form className="settings-form inline-action" onSubmit={saveBrandName}><label>Brand name<input value={settings.branding.brandName} onChange={(event) => setSettings((value) => ({ ...value, branding: { ...value.branding, brandName: event.target.value } }))} required /></label><button className="settings-primary" type="submit">Save brand</button></form>

@@ -2,10 +2,17 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { BrandMark } from "./Branding.jsx";
 
 const suggestedPrompts = [
-  "Explain Article 14 of the Constitution of India",
-  "What does Section 103 of BNS provide?",
-  "Explain electronic evidence under the BSA",
+  "What is aggregate turnover under Section 2(6) of the CGST Act, 2017?",
+  "Who is required to register under Section 22 of the CGST Act, 2017?",
+  "What powers does Article 246A grant regarding GST?",
 ];
+
+function cleanAssistantDisplay(value) {
+  return String(value || "")
+    .replace(/\n*\s*Testing data\s*[—-]\s*legal review pending\.\s*/gi, "\n\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
 
 function groupLabel(dateValue) {
   const date = new Date(dateValue);
@@ -275,6 +282,9 @@ function EmptyPanel({ panel, onStart }) {
 
 function Message({ message, conversationId }) {
   const [feedback, setFeedback] = useState("");
+  const displayContent = message.role === "assistant"
+    ? cleanAssistantDisplay(message.content)
+    : message.content;
   return (
     <article className={`workspace-message ${message.role}`}>
       <div className="message-avatar">{message.role === "assistant" ? "⚖" : "You"}</div>
@@ -289,7 +299,7 @@ function Message({ message, conversationId }) {
             ))}
           </div>
         )}
-        <div className="message-content">{message.content || (message.streaming ? "" : "No response received.")}</div>
+        <div className="message-content">{displayContent || (message.streaming ? "" : "No response received.")}</div>
         {message.role === "assistant" && !message.streaming && (
           <div className="answer-actions">
             <span>{message.elapsed_ms ? `${(message.elapsed_ms / 1000).toFixed(1)}s · ` : ""}Was this useful?</span>

@@ -15,7 +15,7 @@ const manifestPath = path.join(adminKnowledgeRoot, "documents.json");
 const allowedTypes = new Set(["constitution", "act", "rule", "regulation", "notification", "judgment", "order", "amendment", "ordinance", "other"]);
 const allowedExtensions = new Set([".pdf", ".doc", ".docx", ".txt", ".md", ".csv", ".json"]);
 const textExtensions = new Set([".txt", ".md", ".csv", ".json"]);
-const maxExtractedCharacters = 750_000;
+const maxExtractedCharacters = 2_000_000;
 
 function safeValue(value, max = 500) {
   return String(value || "").replace(/[\u0000-\u001f\u007f]/g, " ").trim().slice(0, max);

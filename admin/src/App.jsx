@@ -4,6 +4,8 @@ import LoginPage from "./LoginPage.jsx";
 import Settings from "./Settings.jsx";
 import Users from "./Users.jsx";
 
+const DEFAULT_LOGO_URL = "/assets/covakeel-logo.webp";
+
 const navigation = [
   { id: "overview", icon: "⌂", label: "Overview" },
   { id: "knowledge", icon: "▤", label: "Knowledge base" },
@@ -35,7 +37,7 @@ function Sidebar({ activePage, onNavigate, open, onClose, admin, branding, onLog
     <>
       {open && <button className="sidebar-overlay" type="button" aria-label="Close navigation" onClick={onClose} />}
       <aside className={`admin-sidebar ${open ? "open" : ""}`}>
-        <div className="admin-brand">{branding.logoUrl ? <img src={branding.logoUrl} alt="" /> : <span>⚖</span>}<div>{branding.brandName}<small>Administration</small></div><button type="button" aria-label="Close navigation" onClick={onClose}>×</button></div>
+        <div className="admin-brand"><img src={branding.logoUrl || DEFAULT_LOGO_URL} alt={branding.brandName || "CoVakeel"} /><small>Administration</small><button type="button" aria-label="Close navigation" onClick={onClose}>×</button></div>
         <nav aria-label="Admin navigation">
           {navigation.map((item) => (
             <button className={activePage === item.id ? "active" : ""} type="button" key={item.id} onClick={() => { onNavigate(item.id); onClose(); }}>
@@ -172,7 +174,7 @@ export default function App() {
     setActivePage("overview");
   };
 
-  if (sessionLoading) return <div className="admin-session-loading"><span>⚖</span><p>Opening CoVakeel Admin…</p></div>;
+  if (sessionLoading) return <div className="admin-session-loading"><img src={DEFAULT_LOGO_URL} alt="CoVakeel" /><p>Opening CoVakeel Admin…</p></div>;
   if (!admin) return <LoginPage onLogin={setAdmin} />;
 
   return (
