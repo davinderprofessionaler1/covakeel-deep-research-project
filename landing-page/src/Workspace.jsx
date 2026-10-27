@@ -14,6 +14,73 @@ function cleanAssistantDisplay(value) {
     .trim();
 }
 
+const PDF_URL_PATTERN = /https?:\/\/[^\s<>"')\]]+\.pdf(?:\?[^\s<>"')\]]*)?/gi;
+
+function sourceTitleFromUrl(url) {
+  try {
+    const filename = decodeURIComponent(new URL(url).pathname.split("/").pop() || "Official legal source")
+      .replace(/\.pdf$/i, "")
+      .replace(/[-_]+/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+    return filename || "Official legal source";
+  } catch {
+    return "Official legal source";
+  }
+}
+
+function extractPdfSources(value) {
+  const lines = cleanAssistantDisplay(value).split("\n");
+  const sources = [];
+  const removed = new Set();
+  const replacements = new Map();
+
+  lines.forEach((line, index) => {
+    const urls = [...line.matchAll(PDF_URL_PATTERN)].map((match) => match[0]);
+    if (!urls.length) return;
+
+    let sourceLineIndex = index;
+    let sourceLabel = line.replace(PDF_URL_PATTERN, "").trim();
+    if (!/^Source\s*:/i.test(sourceLabel)) {
+      for (let cursor = index - 1; cursor >= 0; cursor -= 1) {
+        if (!lines[cursor].trim()) continue;
+        if (/^Source\s*:/i.test(lines[cursor].trim())) {
+          sourceLineIndex = cursor;
+          sourceLabel = lines[cursor].trim();
+        }
+        break;
+      }
+    }
+
+    urls.forEach((url) => {
+      if (sources.some((source) => source.url === url)) return;
+      let hostname = "Official source";
+      try { hostname = new URL(url).hostname.replace(/^www\./, ""); } catch { /* Keep fallback. */ }
+      sources.push({
+        url,
+        hostname,
+        title: sourceLabel.replace(/^Source\s*:\s*/i, "").trim() || sourceTitleFromUrl(url),
+      });
+    });
+
+    const remaining = line.replace(PDF_URL_PATTERN, "").trim();
+    if (remaining && !/^Source\s*:/i.test(remaining)) replacements.set(index, remaining);
+    else removed.add(index);
+    if (sourceLineIndex !== index) removed.add(sourceLineIndex);
+  });
+
+  const text = lines
+    .map((line, index) => replacements.has(index) ? replacements.get(index) : removed.has(index) ? "" : line)
+    .join("\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+  return { text, sources };
+}
+
+function sourceFileUrl(source, download = false) {
+  return `/api/source-file?url=${encodeURIComponent(source.url)}${download ? "&download=1" : ""}`;
+}
+
 function groupLabel(dateValue) {
   const date = new Date(dateValue);
   const today = new Date();
@@ -280,15 +347,58 @@ function EmptyPanel({ panel, onStart }) {
   );
 }
 
+function PdfIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M7 2.75h7l4 4V21.25H7z" />
+      <path d="M14 2.75v4h4M9.2 16.2v-5h1.7a1.55 1.55 0 0 1 0 3.1H9.2m4 1.9v-5h1.45c1.65 0 2.65.95 2.65 2.5s-1 2.5-2.65 2.5z" />
+    </svg>
+  );
+}
+
+function SourceDrawer({ source, onClose }) {
+  useEffect(() => {
+    if (!source) return undefined;
+    const closeOnEscape = (event) => { if (event.key === "Escape") onClose(); };
+    document.addEventListener("keydown", closeOnEscape);
+    document.body.classList.add("source-preview-open");
+    return () => {
+      document.removeEventListener("keydown", closeOnEscape);
+      document.body.classList.remove("source-preview-open");
+    };
+  }, [source, onClose]);
+
+  if (!source) return null;
+  return (
+    <div className="source-preview-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
+      <aside className="source-preview-drawer" role="dialog" aria-modal="true" aria-labelledby="source-preview-title">
+        <header>
+          <div>
+            <span>Official PDF source</span>
+            <strong id="source-preview-title" title={source.title}>{source.title}</strong>
+            <small>{source.hostname}</small>
+          </div>
+          <a className="source-preview-download" href={sourceFileUrl(source, true)} download aria-label="Download PDF" title="Download PDF">↓</a>
+          <button type="button" aria-label="Close PDF preview" title="Close preview" onClick={onClose}>×</button>
+        </header>
+        <iframe src={sourceFileUrl(source)} title={`${source.title} PDF preview`} />
+      </aside>
+    </div>
+  );
+}
+
 function Message({ message, conversationId }) {
   const [feedback, setFeedback] = useState("");
-  const displayContent = message.role === "assistant"
-    ? cleanAssistantDisplay(message.content)
-    : message.content;
+  const [selectedSource, setSelectedSource] = useState(null);
+  const parsedContent = message.role === "assistant"
+    ? extractPdfSources(message.content)
+    : { text: message.content, sources: [] };
+  const displayContent = parsedContent.text;
   return (
-    <article className={`workspace-message ${message.role}`}>
-      <div className="message-avatar">{message.role === "assistant" ? "⚖" : "You"}</div>
-      <div className="message-body">
+    <>
+      <article className={`workspace-message ${message.role}`}>
+        <div className="message-avatar">{message.role === "assistant" ? "⚖" : "You"}</div>
+        <div className="message-body">
         {message.attachments?.length > 0 && (
           <div className="message-attachments">
             {message.attachments.map((attachment) => (
@@ -299,7 +409,23 @@ function Message({ message, conversationId }) {
             ))}
           </div>
         )}
-        <div className="message-content">{displayContent || (message.streaming ? "" : "No response received.")}</div>
+        {(displayContent || message.streaming || parsedContent.sources.length === 0) && (
+          <div className="message-content">{displayContent || (message.streaming ? "" : "No response received.")}</div>
+        )}
+        {parsedContent.sources.length > 0 && (
+          <div className="pdf-source-row" aria-label="PDF sources">
+            {parsedContent.sources.map((source) => (
+              <article className="pdf-source-card" key={source.url}>
+                <button className="pdf-source-open" type="button" onClick={() => setSelectedSource(source)} aria-label={`Preview ${source.title}`}>
+                  <span className="pdf-source-icon"><PdfIcon /></span>
+                  <span className="pdf-source-copy"><strong>{source.title}</strong><small>{source.hostname} · PDF</small></span>
+                  <span className="pdf-source-preview">Preview</span>
+                </button>
+                <a className="pdf-source-download" href={sourceFileUrl(source, true)} download aria-label={`Download ${source.title}`} title="Download PDF">↓</a>
+              </article>
+            ))}
+          </div>
+        )}
         {message.role === "assistant" && !message.streaming && (
           <div className="answer-actions">
             <span>{message.elapsed_ms ? `${(message.elapsed_ms / 1000).toFixed(1)}s · ` : ""}Was this useful?</span>
@@ -307,8 +433,10 @@ function Message({ message, conversationId }) {
             <button className={feedback === "down" ? "active" : ""} type="button" aria-label="Unhelpful answer" onClick={() => setFeedback("down")}>♢</button>
           </div>
         )}
-      </div>
-    </article>
+        </div>
+      </article>
+      <SourceDrawer source={selectedSource} onClose={() => setSelectedSource(null)} />
+    </>
   );
 }
 

@@ -10,6 +10,7 @@ import { registerChatRoutes } from "./chat.js";
 import { registerAttachmentRoutes } from "./attachments.js";
 import { registerBrandingRoutes } from "./branding.js";
 import { registerInternalAdminRoutes } from "./internal-admin.js";
+import { registerSourceFileRoutes } from "./source-files.js";
 
 const app = express();
 const port = Number(process.env.PORT || 3001);
@@ -25,6 +26,7 @@ registerAuthRoutes(app);
 registerBrandingRoutes(app);
 registerInternalAdminRoutes(app);
 registerAttachmentRoutes(app);
+registerSourceFileRoutes(app);
 registerChatRoutes(app);
 
 app.get("/api/health", async (_request, response) => {
