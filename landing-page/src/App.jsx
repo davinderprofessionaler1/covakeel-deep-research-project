@@ -336,7 +336,13 @@ function ExactLanding() {
             <div><a className="landing-brand footer-logo" href="#top"><BrandMark /></a><p>Indian tax-law research with official-source citations.</p><p className="footer-status">● Secure email access · Saved research workspace</p></div>
             <div><h3>Company</h3><a href="#who-we-are">Who we are</a><a href="#what-we-do">What we do</a><a href="#how-it-works">How it works</a></div>
             <div><h3>Research</h3><a href="#use-cases">What CoVakeel is for</a><a href="/auth?mode=login">Open workspace</a></div>
-            <div><h3>Account & support</h3><a href="/auth?mode=login">Sign in</a><a href="/auth?mode=signup">Create account</a></div>
+            <div>
+              <h3>Account & support</h3>
+              <a href="/auth?mode=login">Sign in</a>
+              <a href="/auth?mode=signup">Create account</a>
+              <a href="mailto:hello@covakeel.com">✉ hello@covakeel.com</a>
+              <a href="tel:+919876543210">☎ +91 98765 43210</a>
+            </div>
           </div>
           <div className="landing-footer-bottom"><span>© 2026 CoVakeel. All rights reserved.</span><span>Research · Read · Verify</span></div>
         </div>
