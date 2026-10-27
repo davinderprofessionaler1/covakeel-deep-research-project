@@ -5,6 +5,8 @@ import {
   deleteSession as deleteDatabaseSession,
   findUserByEmail,
   isDatabaseConfigured,
+  getRegisteredUserActivity,
+  listAdminConversationRecords,
   listRegisteredUsers,
   readLatestOtp,
   readOtpLockout,
@@ -12,6 +14,7 @@ import {
   recordFailedOtpAttempt,
   saveOtp as saveDatabaseOtp,
   saveSession as saveDatabaseSession,
+  setRegisteredUserBlocked,
 } from "./db.js";
 
 const memory = {
@@ -96,7 +99,7 @@ export async function getOrCreateVerifiedUser(email) {
   if (!usesDevelopmentStore()) return createVerifiedUser(email);
   let user = memory.users.get(email);
   if (!user) {
-    user = { id: memory.nextUserId++, email, email_verified_at: new Date(), created_at: new Date() };
+    user = { id: memory.nextUserId++, email, email_verified_at: new Date(), is_blocked: false, blocked_at: null, blocked_reason: null, created_at: new Date() };
     memory.users.set(email, user);
   }
   return user;
@@ -105,6 +108,7 @@ export async function getOrCreateVerifiedUser(email) {
 export async function saveSession(payload) {
   if (!usesDevelopmentStore()) return saveDatabaseSession(payload);
   const user = [...memory.users.values()].find((candidate) => candidate.id === payload.userId);
+  if (!user || user.is_blocked) throw new Error("This account is blocked.");
   const now = new Date();
   memory.sessions.set(payload.tokenHash, {
     user_id: payload.userId,
@@ -118,7 +122,8 @@ export async function saveSession(payload) {
 export async function getSession(tokenHash) {
   if (!usesDevelopmentStore()) return readDatabaseSession(tokenHash);
   const session = memory.sessions.get(tokenHash);
-  if (!session || new Date(session.expires_at) <= new Date()) {
+  const user = session ? [...memory.users.values()].find((candidate) => candidate.id === session.user_id) : null;
+  if (!session || !user || user.is_blocked || new Date(session.expires_at) <= new Date()) {
     memory.sessions.delete(tokenHash);
     return null;
   }
@@ -157,4 +162,30 @@ export async function listUsers({ search = "", page = 1, pageSize = 25 } = {}) {
       messages: 0,
     },
   };
+}
+
+export async function setUserBlocked(userId, blocked, reason = "") {
+  if (!usesDevelopmentStore()) return setRegisteredUserBlocked(userId, blocked, reason);
+  const user = [...memory.users.values()].find((candidate) => candidate.id === userId);
+  if (!user) return null;
+  user.is_blocked = blocked;
+  user.blocked_at = blocked ? new Date() : null;
+  user.blocked_reason = blocked ? reason || null : null;
+  if (blocked) {
+    for (const [key, session] of memory.sessions.entries()) if (session.user_id === userId) memory.sessions.delete(key);
+  }
+  return user;
+}
+
+export async function getUserActivity(userId) {
+  if (!usesDevelopmentStore()) return getRegisteredUserActivity(userId);
+  const user = [...memory.users.values()].find((candidate) => candidate.id === userId);
+  if (!user) return null;
+  const sessions = [...memory.sessions.values()].filter((session) => session.user_id === userId);
+  return { user: { ...user, conversation_count: 0, message_count: 0, last_active_at: user.created_at }, conversations: [], recentMessages: [], sessions };
+}
+
+export async function listAdminConversations({ search = "", page = 1, pageSize = 25 } = {}) {
+  if (!usesDevelopmentStore()) return listAdminConversationRecords({ search, page, pageSize });
+  return { conversations: [], total: 0 };
 }

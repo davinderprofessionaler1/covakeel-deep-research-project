@@ -3,7 +3,7 @@ import path from "node:path";
 import { Router } from "express";
 import multer from "multer";
 import { requireAdmin } from "../services/admin-auth.js";
-import { brandingRoot, publicBranding, readSettings, setSmtpPassword, updateSettings } from "../services/settings-store.js";
+import { brandingRoot, publicBranding, publicPlans, readSettings, setSmtpPassword, updateSettings } from "../services/settings-store.js";
 
 export const settingsRouter = Router();
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 2 * 1024 * 1024, files: 1 } });
@@ -25,6 +25,7 @@ function settingsResponse(settings) {
       passwordConfigured: Boolean(settings.smtp.passwordEncrypted),
       updatedAt: settings.smtp.updatedAt,
     },
+    plans: publicPlans(settings),
   };
 }
 
@@ -86,4 +87,23 @@ settingsRouter.put("/settings/smtp", requireAdmin, async (request, response) => 
     return value;
   });
   return response.json(settingsResponse(settings));
+});
+
+settingsRouter.put("/settings/plans", requireAdmin, async (request, response) => {
+  const plans = request.body?.plans;
+  if (!Array.isArray(plans) || plans.length < 1 || plans.length > 8) return response.status(400).json({ error: "Add between 1 and 8 plans." });
+  const normalized = plans.map((plan, index) => ({
+    id: String(plan.id || `plan-${index + 1}`).trim().toLowerCase().replace(/[^a-z0-9-]/g, "-").slice(0, 48),
+    name: String(plan.name || "").trim().slice(0, 60),
+    priceMonthly: Number(plan.priceMonthly),
+    currency: String(plan.currency || "INR").trim().toUpperCase().slice(0, 3),
+    description: String(plan.description || "").trim().slice(0, 240),
+    active: Boolean(plan.active),
+  }));
+  if (normalized.some((plan) => !plan.id || !plan.name || !Number.isFinite(plan.priceMonthly) || plan.priceMonthly < 0 || !/^[A-Z]{3}$/.test(plan.currency))) {
+    return response.status(400).json({ error: "Each plan needs a name, valid currency and non-negative monthly price." });
+  }
+  if (new Set(normalized.map((plan) => plan.id)).size !== normalized.length) return response.status(400).json({ error: "Plan identifiers must be unique." });
+  const settings = await updateSettings((value) => { value.plans = normalized; return value; });
+  return response.json({ plans: publicPlans(settings) });
 });

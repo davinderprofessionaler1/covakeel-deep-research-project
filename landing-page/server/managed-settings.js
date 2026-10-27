@@ -5,6 +5,10 @@ import { fileURLToPath } from "node:url";
 
 const landingRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const settingsPath = path.resolve(landingRoot, "..", "storage", "admin", "settings.json");
+const fallbackPlans = [
+  { id: "research", name: "Research", priceMonthly: 999, currency: "INR", description: "Legal research with cited official sources.", active: true },
+  { id: "professional", name: "Professional", priceMonthly: 2499, currency: "INR", description: "Higher usage for advocates and tax professionals.", active: true },
+];
 
 function encryptionKey() {
   const secret = process.env.ADMIN_SETTINGS_SECRET || (process.env.NODE_ENV === "production" ? "" : "covakeel-local-settings-only");
@@ -40,5 +44,17 @@ export async function managedSmtpSettings() {
   } catch (error) {
     if (error.code !== "ENOENT") console.error("Unable to load managed SMTP settings:", error.message);
     return null;
+  }
+}
+
+export async function managedPlans() {
+  try {
+    const settings = JSON.parse(await fs.readFile(settingsPath, "utf8"));
+    return (Array.isArray(settings.plans) ? settings.plans : fallbackPlans)
+      .filter((plan) => plan.active)
+      .map(({ id, name, priceMonthly, currency, description }) => ({ id, name, priceMonthly, currency, description }));
+  } catch (error) {
+    if (error.code !== "ENOENT") console.error("Unable to load managed plans:", error.message);
+    return fallbackPlans.map(({ id, name, priceMonthly, currency, description }) => ({ id, name, priceMonthly, currency, description }));
   }
 }

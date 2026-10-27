@@ -11,6 +11,7 @@ import { registerAttachmentRoutes } from "./attachments.js";
 import { registerBrandingRoutes } from "./branding.js";
 import { registerInternalAdminRoutes } from "./internal-admin.js";
 import { registerSourceFileRoutes } from "./source-files.js";
+import { managedPlans } from "./managed-settings.js";
 
 const app = express();
 const port = Number(process.env.PORT || 3001);
@@ -28,6 +29,8 @@ registerInternalAdminRoutes(app);
 registerAttachmentRoutes(app);
 registerSourceFileRoutes(app);
 registerChatRoutes(app);
+
+app.get("/api/plans", async (_request, response) => response.json({ plans: await managedPlans() }));
 
 app.get("/api/health", async (_request, response) => {
   response.json({ status: "ok", database: await databaseStatus() });

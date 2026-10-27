@@ -145,6 +145,7 @@ export function registerAuthRoutes(app) {
     }
 
     const user = await getUser(email);
+    if (user?.is_blocked) return response.status(403).json({ error: "This CoVakeel account is blocked. Contact the administrator." });
     if (intent === "login" && !user) return response.status(404).json({ error: "No CoVakeel account exists for this email. Please sign up first." });
     if (intent === "signup" && user) return response.status(409).json({ error: "An account already exists. Please sign in." });
 
@@ -191,7 +192,9 @@ export function registerAuthRoutes(app) {
 
     await consumeOtp(otp.id);
     await clearOtpFailures(email);
-    const user = intent === "signup" ? await getOrCreateVerifiedUser(email) : await getUser(email);
+    const existingUser = await getUser(email);
+    if (existingUser?.is_blocked) return response.status(403).json({ error: "This CoVakeel account is blocked. Contact the administrator." });
+    const user = intent === "signup" ? await getOrCreateVerifiedUser(email) : existingUser;
     if (!user) return response.status(404).json({ error: "Account not found. Please sign up first." });
 
     const sessionToken = crypto.randomBytes(32).toString("base64url");

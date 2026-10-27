@@ -3,8 +3,9 @@ import KnowledgeBase from "./KnowledgeBase.jsx";
 import LoginPage from "./LoginPage.jsx";
 import Settings from "./Settings.jsx";
 import Users from "./Users.jsx";
+import Conversations from "./Conversations.jsx";
 
-const DEFAULT_LOGO_URL = "/assets/covakeel-logo.webp";
+const DEFAULT_LOGO_URL = "/assets/covakeel-logo-transparent.png";
 
 const navigation = [
   { id: "overview", icon: "⌂", label: "Overview" },
@@ -190,8 +191,9 @@ export default function App() {
           {activePage === "overview" && <Overview dashboard={dashboard} loading={loading} error={error} onRefresh={loadDashboard} />}
           {activePage === "knowledge" && <KnowledgeBase />}
           {activePage === "users" && <Users />}
+          {activePage === "conversations" && <Conversations onOpenUser={() => setActivePage("users")} />}
           {activePage === "settings" && <Settings admin={admin} onAdminUpdated={setAdmin} onPasswordChanged={() => setAdmin(null)} onBrandingUpdated={updateBranding} />}
-          {!['overview', 'knowledge', 'users', 'settings'].includes(activePage) && <ModulePlaceholder page={activePage} />}
+          {!['overview', 'knowledge', 'users', 'conversations', 'settings'].includes(activePage) && <ModulePlaceholder page={activePage} />}
         </div>
       </main>
     </div>

@@ -12,6 +12,10 @@ export const brandingRoot = path.join(storageRoot, "branding");
 const defaultEmail = String(process.env.ADMIN_INITIAL_EMAIL || "admin@covakeel.local").trim().toLowerCase();
 const configuredInitialPassword = process.env.ADMIN_INITIAL_PASSWORD;
 const defaultPassword = configuredInitialPassword || "Admin@12345";
+const defaultPlans = [
+  { id: "research", name: "Research", priceMonthly: 999, currency: "INR", description: "Legal research with cited official sources.", active: true },
+  { id: "professional", name: "Professional", priceMonthly: 2499, currency: "INR", description: "Higher usage for advocates and tax professionals.", active: true },
+];
 
 function passwordRecord(password) {
   const salt = crypto.randomBytes(16).toString("hex");
@@ -69,6 +73,7 @@ function initialSettings() {
       from: "",
       updatedAt: null,
     },
+    plans: defaultPlans,
   };
 }
 
@@ -81,13 +86,26 @@ async function atomicWrite(value) {
 
 export async function readSettings() {
   try {
-    return JSON.parse(await fs.readFile(settingsPath, "utf8"));
+    const settings = JSON.parse(await fs.readFile(settingsPath, "utf8"));
+    if (!Array.isArray(settings.plans)) settings.plans = structuredClone(defaultPlans);
+    return settings;
   } catch (error) {
     if (error.code !== "ENOENT") throw error;
     const settings = initialSettings();
     await atomicWrite(settings);
     return settings;
   }
+}
+
+export function publicPlans(settings) {
+  return (settings.plans || defaultPlans).map((plan) => ({
+    id: plan.id,
+    name: plan.name,
+    priceMonthly: plan.priceMonthly,
+    currency: plan.currency,
+    description: plan.description,
+    active: Boolean(plan.active),
+  }));
 }
 
 export async function updateSettings(mutator) {

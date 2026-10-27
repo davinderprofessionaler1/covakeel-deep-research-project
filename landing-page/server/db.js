@@ -54,7 +54,7 @@ export async function findUserByEmail(email) {
   const database = getPool();
   if (!database) return null;
   const result = await database.query(
-    "SELECT id, email, email_verified_at, created_at FROM users WHERE email = $1",
+    "SELECT id, email, email_verified_at, is_blocked, blocked_at, blocked_reason, created_at FROM users WHERE email = $1",
     [email],
   );
   return result.rows[0] || null;
@@ -66,7 +66,7 @@ export async function listRegisteredUsers({ search = "", page = 1, pageSize = 25
   const offset = (page - 1) * pageSize;
   const [users, total, summary] = await Promise.all([
     database.query(
-      `SELECT u.id, u.email, u.email_verified_at, u.created_at, u.updated_at,
+      `SELECT u.id, u.email, u.email_verified_at, u.is_blocked, u.blocked_at, u.blocked_reason, u.created_at, u.updated_at,
               COUNT(DISTINCT c.id)::int AS conversation_count,
               COUNT(DISTINCT m.id)::int AS message_count,
               GREATEST(MAX(s.last_seen_at), MAX(c.updated_at), u.created_at) AS last_active_at
@@ -211,7 +211,7 @@ export async function createVerifiedUser(email) {
     `INSERT INTO users (email, email_verified_at)
      VALUES ($1, NOW())
      ON CONFLICT (email) DO UPDATE SET email_verified_at = COALESCE(users.email_verified_at, NOW()), updated_at = NOW()
-     RETURNING id, email, email_verified_at, created_at`,
+     RETURNING id, email, email_verified_at, is_blocked, blocked_at, blocked_reason, created_at`,
     [email],
   );
   return result.rows[0];
@@ -233,7 +233,7 @@ export async function readSession(tokenHash) {
     `SELECT s.id, s.expires_at, u.id AS user_id, u.email
      FROM user_sessions s
      JOIN users u ON u.id = s.user_id
-     WHERE s.token_hash = $1 AND s.expires_at > NOW()`,
+     WHERE s.token_hash = $1 AND s.expires_at > NOW() AND u.is_blocked = FALSE`,
     [tokenHash],
   );
   if (!result.rows[0]) return null;
@@ -245,6 +245,110 @@ export async function deleteSession(tokenHash) {
   const database = getPool();
   if (!database) return;
   await database.query("DELETE FROM user_sessions WHERE token_hash = $1", [tokenHash]);
+}
+
+export async function setRegisteredUserBlocked(userId, blocked, reason = "") {
+  const database = getPool();
+  if (!database) throw new Error("PostgreSQL is not configured.");
+  const client = await database.connect();
+  try {
+    await client.query("BEGIN");
+    const result = await client.query(
+      `UPDATE users
+       SET is_blocked = $2,
+           blocked_at = CASE WHEN $2 THEN NOW() ELSE NULL END,
+           blocked_reason = CASE WHEN $2 THEN NULLIF($3, '') ELSE NULL END,
+           updated_at = NOW()
+       WHERE id = $1
+       RETURNING id, email, email_verified_at, is_blocked, blocked_at, blocked_reason, created_at, updated_at`,
+      [userId, blocked, reason],
+    );
+    if (blocked && result.rows[0]) await client.query("DELETE FROM user_sessions WHERE user_id = $1", [userId]);
+    await client.query("COMMIT");
+    return result.rows[0] || null;
+  } catch (error) {
+    await client.query("ROLLBACK");
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
+export async function getRegisteredUserActivity(userId) {
+  const database = getPool();
+  if (!database) throw new Error("PostgreSQL is not configured.");
+  const [user, conversations, messages, sessions] = await Promise.all([
+    database.query(
+      `SELECT u.id, u.email, u.email_verified_at, u.is_blocked, u.blocked_at, u.blocked_reason,
+              u.created_at, u.updated_at,
+              COUNT(DISTINCT c.id)::int AS conversation_count,
+              COUNT(DISTINCT m.id)::int AS message_count,
+              GREATEST(MAX(s.last_seen_at), MAX(c.updated_at), u.created_at) AS last_active_at
+       FROM users u
+       LEFT JOIN conversations c ON c.user_id = u.id
+       LEFT JOIN conversation_messages m ON m.conversation_id = c.id
+       LEFT JOIN user_sessions s ON s.user_id = u.id
+       WHERE u.id = $1
+       GROUP BY u.id`,
+      [userId],
+    ),
+    database.query(
+      `SELECT c.id, c.title, c.created_at, c.updated_at, COUNT(m.id)::int AS message_count,
+              COALESCE(MAX(m.created_at), c.updated_at) AS last_activity_at
+       FROM conversations c
+       LEFT JOIN conversation_messages m ON m.conversation_id = c.id
+       WHERE c.user_id = $1
+       GROUP BY c.id
+       ORDER BY last_activity_at DESC
+       LIMIT 100`,
+      [userId],
+    ),
+    database.query(
+      `SELECT m.id, m.conversation_id, c.title AS conversation_title, m.role,
+              LEFT(m.content, 320) AS content, m.created_at
+       FROM conversation_messages m
+       JOIN conversations c ON c.id = m.conversation_id
+       WHERE c.user_id = $1
+       ORDER BY m.created_at DESC
+       LIMIT 50`,
+      [userId],
+    ),
+    database.query(
+      `SELECT id, created_at, last_seen_at, expires_at
+       FROM user_sessions WHERE user_id = $1
+       ORDER BY last_seen_at DESC LIMIT 20`,
+      [userId],
+    ),
+  ]);
+  if (!user.rows[0]) return null;
+  return { user: user.rows[0], conversations: conversations.rows, recentMessages: messages.rows, sessions: sessions.rows };
+}
+
+export async function listAdminConversationRecords({ search = "", page = 1, pageSize = 25 } = {}) {
+  const database = getPool();
+  if (!database) throw new Error("PostgreSQL is not configured.");
+  const offset = (page - 1) * pageSize;
+  const [rows, total] = await Promise.all([
+    database.query(
+      `SELECT c.id, c.title, c.created_at, c.updated_at, u.id AS user_id, u.email AS user_email,
+              COUNT(m.id)::int AS message_count,
+              COALESCE(MAX(m.created_at), c.updated_at) AS last_activity_at
+       FROM conversations c
+       JOIN users u ON u.id = c.user_id
+       LEFT JOIN conversation_messages m ON m.conversation_id = c.id
+       WHERE ($1 = '' OR c.title ILIKE '%' || $1 || '%' OR u.email ILIKE '%' || $1 || '%')
+       GROUP BY c.id, u.id
+       ORDER BY last_activity_at DESC
+       LIMIT $2 OFFSET $3`,
+      [search, pageSize, offset],
+    ),
+    database.query(
+      `SELECT COUNT(*)::int AS count FROM conversations c JOIN users u ON u.id = c.user_id
+       WHERE ($1 = '' OR c.title ILIKE '%' || $1 || '%' OR u.email ILIKE '%' || $1 || '%')`,
+      [search],
+    ),
+  ]);
+  return { conversations: rows.rows, total: total.rows[0]?.count || 0 };
 }
 
 export async function createConversationRecord({ id, userId, title }) {

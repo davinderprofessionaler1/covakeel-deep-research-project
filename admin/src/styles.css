@@ -408,3 +408,86 @@ body, .admin-main { background: var(--brand-cream); }
 @media (max-width: 760px) {
   .admin-brand > img { width: 195px; }
 }
+
+/* Larger admin typography for day-to-day readability */
+.admin-shell { font-size: 16px; }
+.admin-sidebar nav button { min-height: 54px; font-size: 16px; }
+.admin-brand > small, .admin-sidebar-foot small, .admin-header > div:first-of-type small { font-size: 13px; }
+.admin-sidebar-foot strong, .header-account b, .header-logout, .status-badge { font-size: 14px; }
+.admin-header > div:first-of-type strong { font-size: 19px; }
+.eyebrow, .metric-card > span, .environment-chip, .module-chip, .user-summary span, .knowledge-summary span { font-size: 13px; }
+.overview-heading p, .users-heading p, .settings-heading p, .knowledge-heading p, .module-placeholder p { font-size: 17px; line-height: 1.6; }
+.refresh-button, .primary-admin-button, .settings-primary, .file-button, .users-clear { font-size: 15px; }
+.metric-card > small, .service-row small, .next-list small, .settings-card-head p, .logo-editor small { font-size: 14px; line-height: 1.5; }
+.service-row strong, .next-list strong, .empty-state { font-size: 16px; }
+.users-toolbar label, .admin-login-card label, .settings-form label, .knowledge-form label { font-size: 14px; }
+.users-toolbar input, .admin-login-card input, .settings-form input, .knowledge-form input, .knowledge-form select, .knowledge-form textarea { font-size: 16px; }
+.users-table th, .knowledge-table th { font-size: 12px; }
+.users-table td, .knowledge-table td { font-size: 14px; line-height: 1.45; }
+.user-identity strong, .user-count, .document-title strong { font-size: 15px; }
+.user-identity small, .thread-id, .source-date, .document-title small { font-size: 12px; }
+.user-status, .type-chip, .record-status, .pipeline-status { font-size: 12px; }
+.users-pagination, .users-pagination button, .knowledge-pagination, .knowledge-pagination button { font-size: 14px; }
+.settings-message, .smtp-readiness, .knowledge-notice, .knowledge-error, .approval-confirm span { font-size: 14px; }
+.pipeline-tabs span, .pipeline-description, .pipeline-item small, .pipeline-empty, .source-name, .row-actions button { font-size: 13px; }
+.pipeline-item strong, .active-index strong, .chunk-list header strong, .chunk-list article p { font-size: 15px; }
+
+.user-status.blocked { background: #fde8e5; color: #a13f34; }
+.user-actions { display: flex; gap: 7px; }
+.user-actions button, .thread-owner { padding: 7px 10px; border: 1px solid #cfb999; border-radius: 7px; background: #fffaf3; color: #62492f; font-size: 13px; font-weight: 700; cursor: pointer; white-space: nowrap; }
+.user-actions button.block { border-color: #e4aaa1; color: #9d4035; }
+.user-actions button.unblock { border-color: #9bc4a9; color: #326646; }
+.user-actions button:disabled { cursor: wait; opacity: .55; }
+.thread-panel { margin-top: 22px; }
+.thread-panel-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; padding: 24px; border-bottom: 1px solid #e7dbce; background: #fcfaf7; }
+.thread-panel-heading h2 { margin: 0; color: #342c26; font: 700 31px "Playfair Display", Georgia, serif; }
+.thread-panel-heading p { margin: 6px 0 0; color: #77695e; font-size: 15px; }
+.thread-panel-heading > strong { color: #916431; font-size: 16px; }
+.thread-table td:first-child strong, .thread-id { display: block; }
+.thread-id { max-width: 300px; margin-top: 4px; overflow: hidden; color: #9b8c80; text-overflow: ellipsis; white-space: nowrap; }
+.thread-owner { padding: 0; border: 0; background: transparent; color: #6f4e28; text-decoration: underline; }
+.conversation-total { padding: 10px 15px; border: 1px solid #cfb58f; border-radius: 10px; background: #fff9ef; color: #76522b; font-size: 16px; }
+
+.activity-backdrop { position: fixed; z-index: 100; inset: 0; display: flex; justify-content: flex-end; background: rgba(3, 27, 21, .56); backdrop-filter: blur(4px); }
+.activity-drawer { width: min(720px, 94vw); height: 100%; overflow-y: auto; padding: 30px; border-left: 1px solid #b88b52; background: #fffdf9; box-shadow: -22px 0 70px rgba(3, 27, 21, .2); }
+.activity-drawer > header { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; padding-bottom: 22px; border-bottom: 1px solid #e3d6c8; }
+.activity-drawer h2 { margin: 0; color: #2f2924; font: 700 31px "Playfair Display", Georgia, serif; overflow-wrap: anywhere; }
+.activity-drawer > header button { display: grid; width: 42px; height: 42px; place-items: center; border: 0; border-radius: 10px; background: #f2e8dc; font-size: 28px; cursor: pointer; }
+.activity-loading { padding: 40px 0; color: #75685d; font-size: 16px; }
+.activity-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 22px 0; }
+.activity-stats article { padding: 16px; border: 1px solid #e0d3c5; border-radius: 12px; background: #f9f4ed; }
+.activity-stats span, .activity-stats strong { display: block; }
+.activity-stats span { color: #826c56; font-size: 13px; font-weight: 700; text-transform: uppercase; }
+.activity-stats strong { margin-top: 5px; color: #17382f; font: 700 28px "Playfair Display", Georgia, serif; }
+.activity-profile { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 0 0 26px; }
+.activity-profile div { padding: 13px; border-left: 3px solid #d4a768; background: #fff8ed; }
+.activity-profile dt { color: #9a7b55; font-size: 12px; font-weight: 700; text-transform: uppercase; }
+.activity-profile dd { margin: 4px 0 0; color: #4d4238; font-size: 14px; }
+.activity-section { margin-top: 28px; }
+.activity-section h3 { margin: 0 0 12px; color: #3d342c; font: 700 24px "Playfair Display", Georgia, serif; }
+.activity-section > p { color: #88796d; font-size: 15px; }
+.activity-thread { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 5px 15px; padding: 14px 0; border-bottom: 1px solid #eee4da; }
+.activity-thread strong, .activity-thread small, .activity-thread time { display: block; }
+.activity-thread strong { color: #43382f; font-size: 15px; }
+.activity-thread small { max-width: 360px; margin-top: 4px; overflow: hidden; color: #9b8c80; font-size: 11px; text-overflow: ellipsis; }
+.activity-thread span { color: #7d5a31; font-size: 13px; font-weight: 700; }
+.activity-thread time { color: #958779; font-size: 12px; text-align: right; }
+.activity-message { padding: 15px; border: 1px solid #e4d8cb; border-radius: 11px; margin-bottom: 10px; background: #fff; }
+.activity-message > div { display: flex; flex-wrap: wrap; align-items: center; gap: 7px 12px; }
+.activity-message strong { color: #17382f; font-size: 14px; }
+.activity-message span, .activity-message time { color: #8b7c70; font-size: 12px; }
+.activity-message time { margin-left: auto; }
+.activity-message p { margin: 9px 0 0; color: #51473f; font-size: 14px; line-height: 1.55; white-space: pre-wrap; }
+
+.plans-card { grid-column: 1 / -1; }
+.plans-editor { display: grid; gap: 14px; margin-bottom: 17px; }
+.plan-editor-row { padding: 17px; border: 1px solid #dfd1c1; border-radius: 12px; background: #fcfaf7; }
+.plan-fields { grid-template-columns: minmax(180px, 1.5fr) minmax(120px, .7fr) 110px 100px; }
+.plan-editor-row > label { margin-bottom: 0; }
+
+@media (max-width: 760px) {
+  .activity-drawer { padding: 22px 16px; }
+  .activity-stats, .activity-profile { grid-template-columns: 1fr; }
+  .plan-fields { grid-template-columns: 1fr; }
+  .thread-panel-heading { align-items: flex-start; flex-direction: column; }
+}

@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 
 const BrandingContext = createContext({ brandName: "CoVakeel", logoUrl: "", updatedAt: null });
-const DEFAULT_LOGO_URL = "/assets/covakeel-logo.webp";
+const DEFAULT_LOGO_URL = "/assets/covakeel-logo-transparent.png";
 
 export function BrandingProvider({ children }) {
   const [branding, setBranding] = useState({ brandName: "CoVakeel", logoUrl: "", updatedAt: null });
