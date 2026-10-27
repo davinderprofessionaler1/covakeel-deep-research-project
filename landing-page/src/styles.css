@@ -345,8 +345,10 @@ h3 { font-size: 23px; }
 .pdf-source-copy strong { margin-bottom: 4px; color: #f7f0e7; font-size: 11px; }
 .pdf-source-copy small { color: #aaaFA9; font-size: 9px; }
 .pdf-source-preview { color: var(--gold); font-size: 10px; font-weight: 700; }
-.pdf-source-download { display: grid; width: 45px; flex: 0 0 45px; place-items: center; border-left: 1px solid #47665c; color: var(--gold); font-size: 21px; font-weight: 700; }
+.pdf-source-download { display: grid; width: 45px; flex: 0 0 45px; place-items: center; border: 0; border-left: 1px solid #47665c; background: transparent; color: var(--gold); font-size: 21px; font-weight: 700; cursor: pointer; }
 .pdf-source-download:hover { background: var(--gold); color: var(--brand-green); }
+.pdf-source-download:disabled, .source-preview-download[aria-busy="true"] { cursor: wait; }
+.download-spinner, .pdf-loading-spinner { display: block; width: 17px; height: 17px; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: pdf-spinner .75s linear infinite; }
 .source-preview-open { overflow: hidden; }
 .source-preview-backdrop { position: fixed; z-index: 100; inset: 0; background: rgba(2, 18, 14, .52); backdrop-filter: blur(2px); }
 .source-preview-drawer { position: absolute; top: 0; right: 0; bottom: 0; display: grid; width: min(760px, 68vw); grid-template-rows: auto minmax(0, 1fr); overflow: hidden; border-left: 1px solid #b98b50; background: #fffdf9; box-shadow: -25px 0 70px rgba(1, 15, 12, .28); animation: source-drawer-in .22s ease-out; }
@@ -358,8 +360,21 @@ h3 { font-size: 23px; }
 .source-preview-drawer header small { margin-top: 4px; color: #9eaaa5; font-size: 9px; }
 .source-preview-drawer header > a, .source-preview-drawer header > button { display: grid; width: 38px; height: 38px; place-items: center; border: 1px solid #47665c; border-radius: 9px; background: #0e3027; color: var(--gold); font-size: 21px; cursor: pointer; }
 .source-preview-drawer header > a:hover, .source-preview-drawer header > button:hover { border-color: var(--gold); background: var(--gold); color: var(--brand-green); }
-.source-preview-drawer iframe { width: 100%; height: 100%; border: 0; background: #ebe8e3; }
+.pdf-preview-body { display: grid; min-height: 0; grid-template-rows: auto minmax(0, 1fr); background: #e5e1db; }
+.pdf-preview-toolbar { display: flex; min-height: 48px; align-items: center; gap: 8px; padding: 7px 14px; border-bottom: 1px solid #d1c8bc; background: #fffaf3; color: #584b40; font-size: 11px; }
+.pdf-preview-toolbar button { display: grid; width: 32px; height: 32px; place-items: center; border: 1px solid #d4c3ae; border-radius: 8px; background: #fff; color: var(--brand-green); font-size: 17px; cursor: pointer; }
+.pdf-preview-toolbar button:hover:not(:disabled) { border-color: var(--gold); background: #f6eadc; }
+.pdf-preview-toolbar button:disabled { cursor: default; opacity: .38; }
+.pdf-preview-toolbar-spacer { flex: 1; }
+.pdf-preview-scroll { position: relative; min-width: 0; min-height: 0; overflow: auto; padding: 17px; text-align: center; }
+.pdf-preview-scroll canvas { display: block; max-width: none; margin: 0 auto; background: #fff; box-shadow: 0 8px 28px rgba(29, 21, 14, .2); }
+.pdf-preview-status { position: absolute; inset: 0; display: grid; place-items: center; align-content: center; gap: 12px; padding: 30px; color: #6d5c4b; text-align: center; }
+.pdf-preview-status .pdf-loading-spinner { width: 28px; height: 28px; border-width: 3px; color: var(--gold); }
+.pdf-preview-status.error strong { color: #713b31; font: 700 20px "Playfair Display", Georgia, serif; }
+.pdf-preview-status.error p { max-width: 390px; margin: 0; font-size: 12px; }
+.pdf-preview-status.error button { padding: 8px 14px; border: 1px solid #caa36c; border-radius: 8px; background: var(--brand-green); color: #fff; cursor: pointer; }
 @keyframes source-drawer-in { from { transform: translateX(35px); opacity: .55; } to { transform: translateX(0); opacity: 1; } }
+@keyframes pdf-spinner { to { transform: rotate(360deg); } }
 .answer-actions { display: inline-flex; align-items: center; gap: 7px; margin-top: 8px; padding: 5px 7px 5px 12px; border-radius: 18px; background: #f5eee6; color: #847465; font-size: 10px; }
 .answer-actions button { display: grid; width: 25px; height: 25px; place-items: center; border: 0; border-radius: 50%; background: #fff; color: #8c6738; cursor: pointer; }
 .answer-actions button.active { background: #b48b50; color: #fff; }

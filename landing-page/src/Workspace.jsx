@@ -1,5 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { getDocument, GlobalWorkerOptions } from "pdfjs-dist";
+import pdfWorkerUrl from "pdfjs-dist/build/pdf.worker.min.mjs?url";
 import { BrandMark } from "./Branding.jsx";
+
+GlobalWorkerOptions.workerSrc = pdfWorkerUrl;
 
 const suggestedPrompts = [
   "What is aggregate turnover under Section 2(6) of the CGST Act, 2017?",
@@ -79,6 +83,68 @@ function extractPdfSources(value) {
 
 function sourceFileUrl(source, download = false) {
   return `/api/source-file?url=${encodeURIComponent(source.url)}${download ? "&download=1" : ""}`;
+}
+
+function sourceFilename(source, response) {
+  const disposition = response?.headers?.get("content-disposition") || "";
+  const encoded = disposition.match(/filename\*=UTF-8''([^;]+)/i)?.[1];
+  const quoted = disposition.match(/filename="([^"]+)"/i)?.[1];
+  let filename = encoded ? decodeURIComponent(encoded) : quoted;
+  if (!filename) {
+    try { filename = decodeURIComponent(new URL(source.url).pathname.split("/").pop() || ""); } catch { /* Use fallback. */ }
+  }
+  filename = String(filename || "covakeel-official-source.pdf")
+    .replace(/[\\/:*?"<>|]/g, "-")
+    .trim();
+  return /\.pdf$/i.test(filename) ? filename : `${filename || "covakeel-official-source"}.pdf`;
+}
+
+async function fetchSourcePdf(source, download = false) {
+  const response = await fetch(sourceFileUrl(source, download), { credentials: "include" });
+  const contentType = response.headers.get("content-type") || "";
+  if (!response.ok) throw new Error(`The PDF could not be loaded (${response.status}).`);
+  if (!contentType.toLowerCase().includes("application/pdf")) {
+    throw new Error("The source returned a web page instead of a PDF.");
+  }
+  return response;
+}
+
+function SourceDownloadButton({ source, className, label }) {
+  const [downloading, setDownloading] = useState(false);
+
+  const download = async () => {
+    if (downloading) return;
+    setDownloading(true);
+    try {
+      const response = await fetchSourcePdf(source, true);
+      const blob = await response.blob();
+      const objectUrl = URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+      anchor.href = objectUrl;
+      anchor.download = sourceFilename(source, response);
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      window.setTimeout(() => URL.revokeObjectURL(objectUrl), 1500);
+    } catch (error) {
+      window.alert(error?.message || "The PDF could not be downloaded.");
+    } finally {
+      setDownloading(false);
+    }
+  };
+
+  return (
+    <button
+      className={className}
+      type="button"
+      aria-label={label || `Download ${source.title}`}
+      aria-busy={downloading}
+      title="Download PDF"
+      onClick={download}
+    >
+      {downloading ? <span className="download-spinner" aria-hidden="true" /> : "↓"}
+    </button>
+  );
 }
 
 function groupLabel(dateValue) {
@@ -356,6 +422,132 @@ function PdfIcon() {
   );
 }
 
+function PdfCanvasPreview({ source }) {
+  const canvasRef = useRef(null);
+  const viewportRef = useRef(null);
+  const [pdfDocument, setPdfDocument] = useState(null);
+  const [pageNumber, setPageNumber] = useState(1);
+  const [pageCount, setPageCount] = useState(0);
+  const [zoom, setZoom] = useState(1);
+  const [containerWidth, setContainerWidth] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [retry, setRetry] = useState(0);
+
+  useEffect(() => {
+    const element = viewportRef.current;
+    if (!element) return undefined;
+    const updateWidth = () => setContainerWidth(Math.round(element.clientWidth));
+    updateWidth();
+    const observer = new ResizeObserver(updateWidth);
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    let loadingTask;
+    let loadedDocument;
+    setLoading(true);
+    setError("");
+    setPdfDocument(null);
+    setPageNumber(1);
+    setPageCount(0);
+
+    (async () => {
+      try {
+        const response = await fetchSourcePdf(source);
+        const bytes = new Uint8Array(await response.arrayBuffer());
+        if (bytes.length < 5 || String.fromCharCode(...bytes.slice(0, 5)) !== "%PDF-") {
+          throw new Error("The official source did not return a valid PDF file.");
+        }
+        loadingTask = getDocument({ data: bytes });
+        loadedDocument = await loadingTask.promise;
+        if (cancelled) {
+          await loadedDocument.destroy();
+          return;
+        }
+        setPdfDocument(loadedDocument);
+        setPageCount(loadedDocument.numPages);
+      } catch (loadError) {
+        if (!cancelled) setError(loadError?.message || "The PDF preview could not be loaded.");
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+      if (loadedDocument) loadedDocument.destroy().catch(() => {});
+      else if (loadingTask) loadingTask.destroy().catch(() => {});
+    };
+  }, [source, retry]);
+
+  useEffect(() => {
+    if (!pdfDocument || !canvasRef.current || !viewportRef.current || !containerWidth) return undefined;
+    let cancelled = false;
+    let renderTask;
+
+    (async () => {
+      try {
+        const page = await pdfDocument.getPage(pageNumber);
+        if (cancelled) return;
+        const baseViewport = page.getViewport({ scale: 1 });
+        const availableWidth = Math.max(260, viewportRef.current.clientWidth - 34);
+        const fitScale = Math.min(1.75, availableWidth / baseViewport.width);
+        const viewport = page.getViewport({ scale: fitScale * zoom });
+        const canvas = canvasRef.current;
+        const context = canvas.getContext("2d", { alpha: false });
+        const outputScale = Math.min(window.devicePixelRatio || 1, 2);
+        canvas.width = Math.floor(viewport.width * outputScale);
+        canvas.height = Math.floor(viewport.height * outputScale);
+        canvas.style.width = `${Math.floor(viewport.width)}px`;
+        canvas.style.height = `${Math.floor(viewport.height)}px`;
+        renderTask = page.render({
+          canvasContext: context,
+          viewport,
+          transform: outputScale === 1 ? null : [outputScale, 0, 0, outputScale, 0, 0],
+        });
+        await renderTask.promise;
+      } catch (renderError) {
+        if (!cancelled && renderError?.name !== "RenderingCancelledException") {
+          setError("This PDF page could not be rendered. Please try again.");
+        }
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+      if (renderTask) renderTask.cancel();
+    };
+  }, [pdfDocument, pageNumber, zoom, containerWidth]);
+
+  return (
+    <div className="pdf-preview-body">
+      <div className="pdf-preview-toolbar" aria-label="PDF controls">
+        <button type="button" disabled={pageNumber <= 1 || loading} onClick={() => setPageNumber((page) => Math.max(1, page - 1))} aria-label="Previous page">←</button>
+        <span>Page <strong>{pageNumber}</strong> of <strong>{pageCount || "—"}</strong></span>
+        <button type="button" disabled={pageNumber >= pageCount || loading} onClick={() => setPageNumber((page) => Math.min(pageCount, page + 1))} aria-label="Next page">→</button>
+        <span className="pdf-preview-toolbar-spacer" />
+        <button type="button" disabled={zoom <= 0.75 || loading} onClick={() => setZoom((value) => Math.max(0.75, value - 0.25))} aria-label="Zoom out">−</button>
+        <span>{Math.round(zoom * 100)}%</span>
+        <button type="button" disabled={zoom >= 2 || loading} onClick={() => setZoom((value) => Math.min(2, value + 0.25))} aria-label="Zoom in">＋</button>
+      </div>
+      <div className="pdf-preview-scroll" ref={viewportRef}>
+        {loading && <div className="pdf-preview-status"><span className="pdf-loading-spinner" /><strong>Loading official PDF…</strong></div>}
+        {error && !loading && (
+          <div className="pdf-preview-status error" role="alert">
+            <strong>PDF preview unavailable</strong>
+            <p>{error}</p>
+            <button type="button" onClick={() => setRetry((value) => value + 1)}>Try again</button>
+          </div>
+        )}
+        <canvas ref={canvasRef} hidden={loading || Boolean(error)} aria-label={`Page ${pageNumber} of ${source.title}`} />
+      </div>
+    </div>
+  );
+}
+
 function SourceDrawer({ source, onClose }) {
   useEffect(() => {
     if (!source) return undefined;
@@ -378,10 +570,10 @@ function SourceDrawer({ source, onClose }) {
             <strong id="source-preview-title" title={source.title}>{source.title}</strong>
             <small>{source.hostname}</small>
           </div>
-          <a className="source-preview-download" href={sourceFileUrl(source, true)} download aria-label="Download PDF" title="Download PDF">↓</a>
+          <SourceDownloadButton source={source} className="source-preview-download" label="Download PDF" />
           <button type="button" aria-label="Close PDF preview" title="Close preview" onClick={onClose}>×</button>
         </header>
-        <iframe src={sourceFileUrl(source)} title={`${source.title} PDF preview`} />
+        <PdfCanvasPreview source={source} />
       </aside>
     </div>
   );
@@ -421,7 +613,7 @@ function Message({ message, conversationId }) {
                   <span className="pdf-source-copy"><strong>{source.title}</strong><small>{source.hostname} · PDF</small></span>
                   <span className="pdf-source-preview">Preview</span>
                 </button>
-                <a className="pdf-source-download" href={sourceFileUrl(source, true)} download aria-label={`Download ${source.title}`} title="Download PDF">↓</a>
+                <SourceDownloadButton source={source} className="pdf-source-download" />
               </article>
             ))}
           </div>
